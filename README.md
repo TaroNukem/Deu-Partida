@@ -11,7 +11,6 @@
     </td>
     <td>
       <div>
-        <!-- Substitua pela logo do Deu Partida -->
         <img src="./docs/img/logo.png" alt="Logo do Deu Partida" width="120px"/>
       </div>
     </td>
@@ -33,15 +32,17 @@
 ---
 
 ## 📚 Índice
+
 - [Links Úteis](#-links-úteis)
 - [Sobre o Projeto](#-sobre-o-projeto)
 - [Funcionalidades Principais](#-funcionalidades-principais)
 - [Tecnologias Utilizadas](#-tecnologias-utilizadas)
 - [Arquitetura](#-arquitetura)
 - [Instalação e Execução](#-instalação-e-execução)
+- [Banco de Dados](#-banco-de-dados)
 - [Estrutura de Pastas](#-estrutura-de-pastas)
 - [Demonstração](#-demonstração)
-- [Documentações utilizadas](#-documentações-utilizadas)
+- [Documentações Utilizadas](#-documentações-utilizadas)
 - [Autores](#-autores)
 - [Agradecimentos](#-agradecimentos)
 - [Licença](#-licença)
@@ -49,13 +50,15 @@
 ---
 
 ## 🔗 Links Úteis
-* 🌐 **Demo Online:** [Acesse a Aplicação Web](<link-da-demo-web>)
-* 📖 **Documentação (UML):** [Pasta `/docs`](./docs)
-* 🎨 **Wireframe:** [Wireframe do Deu Partida](https://claude.ai/artifact/FEMYX3ad4GBNoscHfaLFeK)
+
+- 🌐 **Demo Online:** [Acesse a Aplicação Web](<link-da-demo-web>)
+- 📖 **Documentação UML:** [Pasta `/docs`](./docs)
+- 🎨 **Wireframe:** [Wireframe do Deu Partida](https://claude.ai/artifact/FEMYX3ad4GBNoscHfaLFeK)
 
 ---
 
 ## 📝 Sobre o Projeto
+
 O Deu Partida nasce da necessidade de organizar o processo de aluguel de automóveis em um único ambiente web, no qual cliente e agentes acompanham o mesmo pedido do início ao fim.
 
 - **Problema que resolve:** centraliza a solicitação, a análise financeira e a execução do contrato de aluguel, que hoje dependem de contatos separados entre cliente, empresa e banco.
@@ -80,19 +83,24 @@ O Deu Partida nasce da necessidade de organizar o processo de aluguel de automó
 ## 🛠 Tecnologias Utilizadas
 
 ### 💻 Front-end
-* **Biblioteca:** React
-* **Build Tool:** Vite
-* **Linguagem:** JavaScript
+
+- **Biblioteca:** React
+- **Build Tool:** Vite
+- **Linguagem:** JavaScript
 
 ### 🖥️ Back-end
-* **Linguagem:** Java (JDK 25)
-* **Framework:** Spring Boot 4.0.x
-* **Arquitetura:** MVC
-* **Build e dependências:** Apache Maven
-* **Autenticação:** login com usuário e senha
+
+- **Linguagem:** Java (JDK 25)
+- **Framework:** Spring Boot 4.0.x
+- **Arquitetura:** MVC
+- **Build e dependências:** Apache Maven
+- **Autenticação:** login com usuário e senha
 
 ### 🗄️ Banco de Dados
-* **Supabase (PostgreSQL)**
+
+- **SGBD:** PostgreSQL
+- **Hospedagem:** Supabase
+- **Conexão:** JDBC utilizando Session Pooler
 
 ---
 
@@ -113,48 +121,34 @@ Os modelos UML ficam versionados na pasta [`/docs`](./docs).
 
 | Modelo | Arquivo |
 | :--- | :--- |
-| Diagrama de Casos de Uso | [docs/casos-de-uso](./docs) |
-| Histórias do Usuário | [docs/historias-de-usuario](./docs) |
-| Diagrama de Classes | [docs/diagrama-de-classes](./docs) |
-| Diagrama de Pacotes (Visão Lógica) | [docs/diagrama-de-pacotes](./docs) |
+| Diagrama de Casos de Uso | [Documentação em `/docs`](./docs) |
+| Histórias do Usuário | [Documentação em `/docs`](./docs) |
+| Diagrama de Classes | [Documentação em `/docs`](./docs) |
+| Diagrama de Pacotes (Visão Lógica) | [Documentação em `/docs`](./docs) |
 
 ---
 
 ## 🔧 Instalação e Execução
 
 ### Pré-requisitos
-* **Java JDK 25** (back-end)
-* **Maven** (ou o Maven Wrapper `./mvnw` do projeto)
-* **Node.js** LTS (front-end) e **npm**
-* Um projeto no **Supabase** com o banco PostgreSQL criado
 
-### 🔑 Variáveis de Ambiente
+- **Java JDK 25** para o back-end.
+- **Maven** ou Maven Wrapper (`./mvnw`).
+- **Node.js LTS** e **npm** para o front-end.
+- Um projeto no **Supabase** com banco PostgreSQL criado.
 
-#### Back-end (Spring Boot)
-
-| Variável | Descrição | Exemplo |
-| :--- | :--- | :--- |
-| `SERVER_PORT` | Porta do back-end. | `8080` |
-| `SPRING_DATASOURCE_URL` | URL JDBC do banco no Supabase. | `jdbc:postgresql://db.<projeto>.supabase.co:5432/postgres` |
-| `SPRING_DATASOURCE_USERNAME` | Usuário do banco. | `postgres` |
-| `SPRING_DATASOURCE_PASSWORD` | Senha do banco. | `sua-senha-aqui` |
-
-#### Front-end (React, Vite)
-
-Crie um arquivo `.env` na raiz da pasta `/frontend`:
-
-| Variável | Descrição | Exemplo |
-| :--- | :--- | :--- |
-| `VITE_API_URL` | URL base da API do back-end. | `http://localhost:8080/api` |
-
-> **Atenção:** nunca versione senhas ou chaves. Mantenha os arquivos `.env` no `.gitignore` e disponibilize apenas um `.env.example`.
-
-### 📦 Instalação de Dependências
+### 1. Clonar o Repositório
 
 ```bash
 git clone <URL_DO_REPOSITORIO>
 cd deu-partida
 ```
+
+### 2. Configurar o Banco de Dados
+
+Siga as instruções da seção [Banco de Dados](#-banco-de-dados) para criar o projeto no Supabase e configurar as variáveis de ambiente antes de executar o back-end.
+
+### 3. Instalar as Dependências
 
 **Front-end:**
 
@@ -172,62 +166,177 @@ cd backend
 cd ..
 ```
 
-### ⚡ Como Executar a Aplicação
+No Windows, caso o wrapper não execute pelo terminal, utilize:
 
-Execute em **dois terminais separados**.
+```powershell
+.\mvnw.cmd clean install
+```
 
-**Terminal 1: Back-end (Spring Boot)**
+### 4. Executar a Aplicação
+
+Execute o back-end e o front-end em dois terminais separados.
+
+**Terminal 1 — Back-end (Spring Boot):**
 
 ```bash
 cd backend
 ./mvnw spring-boot:run
 ```
 
-🚀 O back-end estará disponível em **http://localhost:8080**.
+No Windows PowerShell:
 
-**Terminal 2: Front-end (React, Vite)**
+```powershell
+cd backend
+.\mvnw.cmd spring-boot:run
+```
+
+O back-end estará disponível em `http://localhost:8080`.
+
+**Terminal 2 — Front-end (React + Vite):**
 
 ```bash
 cd frontend
 npm run dev
 ```
 
-🎨 O front-end estará disponível em **http://localhost:5173**.
+O front-end estará disponível em `http://localhost:5173`.
+
+---
+
+## 🗄️ Banco de Dados
+
+O projeto utiliza o **PostgreSQL hospedado no Supabase**. Para que o back-end consiga acessar o banco, é necessário criar um projeto, obter os dados de conexão do Session Pooler e configurar as variáveis de ambiente.
+
+### 1. Criar um projeto no Supabase
+
+1. Acesse o [Supabase](https://supabase.com/).
+2. Entre na sua conta ou crie uma conta.
+3. Clique em **New Project**.
+4. Informe o nome do projeto e configure a senha do banco de dados.
+5. Guarde a senha em local seguro e aguarde a criação do projeto.
+
+### 2. Obter a conexão pelo Session Pooler
+
+1. Abra o projeto no painel do Supabase.
+2. Clique em **Connect** para consultar as opções de conexão.
+3. Selecione **Session Pooler** como método de conexão.
+4. Copie a string de conexão fornecida pelo Supabase.
+5. Utilize o endereço do servidor, a porta, o nome do banco e o usuário indicados na configuração.
+
+O endereço JDBC normalmente segue este formato:
+
+```text
+jdbc:postgresql://<HOST_DO_SESSION_POOLER>:<PORTA>/postgres?sslmode=require
+```
+
+Os valores entre `<` e `>` são marcadores ilustrativos e devem ser substituídos pelos dados fornecidos no painel do Supabase.
+
+> **Importante:** utilize os dados específicos do seu projeto. Não compartilhe nem publique a senha do banco de dados.
+
+### 3. Criar o arquivo `.env`
+
+Na pasta `backend`, copie o arquivo `.env.example` e renomeie a cópia para `.env`.
+
+A estrutura esperada é:
+
+```text
+deu-partida/
+├── backend/
+│   ├── .env.example
+│   ├── .env
+│   └── ...
+└── frontend/
+    └── ...
+```
+
+Preencha o arquivo `backend/.env` com os dados da conexão do seu projeto:
+
+```env
+SERVER_PORT=8080
+SPRING_DATASOURCE_URL=jdbc:postgresql://<HOST_DO_SESSION_POOLER>:<PORTA>/postgres?sslmode=require
+SPRING_DATASOURCE_USERNAME=<USUARIO_DO_SESSION_POOLER>
+SPRING_DATASOURCE_PASSWORD=
+```
+
+- `SERVER_PORT`: porta local do servidor Spring Boot.
+- `SPRING_DATASOURCE_URL`: endereço JDBC do Session Pooler.
+- `SPRING_DATASOURCE_USERNAME`: usuário de conexão fornecido pelo Supabase.
+- `SPRING_DATASOURCE_PASSWORD`: senha definida para o banco de dados.
+
+**Atenção:** preencha a senha apenas no arquivo `.env` local. O exemplo acima deixa o campo vazio intencionalmente para não expor credenciais.
+
+### 4. Configurar o Spring Boot
+
+Confira se o arquivo `backend/src/main/resources/application.properties` utiliza as variáveis de ambiente:
+
+```properties
+server.port=${SERVER_PORT:8080}
+
+spring.datasource.url=${SPRING_DATASOURCE_URL}
+spring.datasource.username=${SPRING_DATASOURCE_USERNAME}
+spring.datasource.password=${SPRING_DATASOURCE_PASSWORD}
+```
+
+Se essas configurações já existirem, não é necessário duplicá-las.
+
+**Importante sobre o `.env`:** o Spring Boot não carrega automaticamente arquivos `.env` em todas as configurações. Se o projeto não tiver uma biblioteca ou configuração específica para carregá-lo, defina as variáveis no ambiente de execução da aplicação ou configure o carregamento do arquivo. No IntelliJ IDEA, elas podem ser definidas nas configurações de execução do Spring Boot.
+
+### 5. Manter as credenciais protegidas
+
+Confira se o `.gitignore` da raiz do repositório contém regras para ignorar os arquivos `.env`:
+
+```gitignore
+# Variáveis de ambiente
+.env
+.env.*
+!.env.example
+```
+
+Se necessário, acrescente regras específicas para os arquivos de ambiente do projeto:
+
+```gitignore
+backend/.env
+frontend/.env
+```
+
+O arquivo `backend/.env.example` pode ser versionado, desde que contenha somente nomes de variáveis e valores ilustrativos, sem senhas, tokens ou credenciais reais.
 
 ---
 
 ## 📂 Estrutura de Pastas
 
-```
+```text
 .
-├── README.md                    # 📘 Documentação principal do projeto.
-├── .gitignore                   # 🧹 Arquivos ignorados pelo Git (.env, node_modules, target).
+├── README.md                    # 📘 Documentação principal do projeto
+├── .gitignore                   # 🧹 Arquivos ignorados pelo Git
 │
-├── /frontend                    # 📁 Aplicação React + Vite
-│   ├── .env.example             # 🧩 Exemplo de variáveis de ambiente.
-│   ├── /public                  # 📂 Arquivos estáticos.
-│   ├── /src
-│   │   ├── /components          # 🧱 Componentes reutilizáveis.
-│   │   ├── /pages               # 📄 Telas (login, pedidos, novo pedido, perfil, painel do agente).
-│   │   ├── /services            # 🔌 Chamadas HTTP à API.
-│   │   └── /utils               # 🛠️ Funções utilitárias.
-│   └── package.json             # 📦 Dependências e scripts.
+├── frontend/                    # 📁 Aplicação React + Vite
+│   ├── .env.example             # 🧩 Exemplo de variáveis de ambiente
+│   ├── public/                  # 📂 Arquivos estáticos
+│   ├── src/
+│   │   ├── components/          # 🧱 Componentes reutilizáveis
+│   │   ├── pages/               # 📄 Telas da aplicação
+│   │   ├── services/             # 🔌 Chamadas HTTP à API
+│   │   └── utils/                # 🛠️ Funções utilitárias
+│   └── package.json              # 📦 Dependências e scripts
 │
-├── /backend                     # 📁 Aplicação Spring Boot (MVC)
-│   ├── /src/main/java           # 📂 Código-fonte Java
-│   │   ├── /controller          # 🎮 Endpoints REST.
-│   │   ├── /service             # ⚙️ Regras de negócio.
-│   │   ├── /repository          # 🗄️ Acesso a dados.
-│   │   ├── /model               # 🧬 Entidades do domínio.
-│   │   ├── /dto                 # ✉️ Data Transfer Objects.
-│   │   ├── /config              # 🔧 Configurações gerais.
-│   │   └── /security            # 🛡️ Autenticação (login).
-│   ├── /src/main/resources      # 📂 application.properties/yml e recursos.
-│   ├── /src/test/java           # 🧪 Testes.
-│   └── pom.xml                  # 🛠️ Build e dependências (Maven).
+├── backend/                     # 📁 Aplicação Spring Boot (MVC)
+│   ├── .env.example             # 🧩 Modelo das variáveis de ambiente
+│   ├── .env                     # 🔐 Credenciais locais (não versionar)
+│   ├── src/
+│   │   ├── main/
+│   │   │   ├── java/            # ☕ Código-fonte Java
+│   │   │   │   └── ...          # Controllers, services, repositories e models
+│   │   │   └── resources/       # ⚙️ application.properties e recursos
+│   │   └── test/
+│   │       └── java/            # 🧪 Testes
+│   └── pom.xml                  # 🛠️ Build e dependências Maven
 │
-└── /docs                        # 📚 Modelos UML (casos de uso, histórias, classes, pacotes) e wireframes.
+└── docs/                        # 📚 Diagramas UML, documentação e wireframes
+    └── img/                     # 🖼️ Imagens do projeto
 ```
+
+> A estrutura apresentada é uma referência. Os diretórios e arquivos devem corresponder aos que realmente existem no repositório.
 
 ---
 
@@ -235,46 +344,50 @@ npm run dev
 
 ### 🌐 Aplicação Web
 
-| Tela | Captura de Tela |
+| Login e Cadastro | Meus Pedidos (cliente) |
 | :---: | :---: |
-| **Login e Cadastro** | **Meus Pedidos (cliente)** |
-| _Sua captura aqui_ | _Sua captura aqui_ |
-| **Novo Pedido** | **Perfil do Cliente (CRUD)** |
-| _Sua captura aqui_ | _Sua captura aqui_ |
-| **Painel do Agente** | |
-| _Sua captura aqui_ | |
+| *Sua captura aqui* | *Sua captura aqui* |
 
-> Dica: hospede as imagens na pasta `/docs/img` do repositório ou no GitHub Pages para que não quebrem.
+| Novo Pedido | Perfil do Cliente (CRUD) |
+| :---: | :---: |
+| *Sua captura aqui* | *Sua captura aqui* |
+
+| Painel do Agente |
+| :---: |
+| *Sua captura aqui* |
+
+> **Dica:** hospede as imagens na pasta `docs/img` do repositório para manter as capturas disponíveis no GitHub.
 
 ---
 
-## 🔗 Documentações utilizadas
+## 🔗 Documentações Utilizadas
 
-* 📖 [React](https://react.dev/reference/react)
-* 📖 [Vite](https://vitejs.dev/config/)
-* 📖 [Spring Boot](https://docs.spring.io/spring-boot/docs/current/reference/html/)
-* 📖 [Supabase](https://supabase.com/docs)
-* 📖 [Conventional Commits](https://www.conventionalcommits.org/en/v1.0.0/)
+- 📖 [React](https://react.dev/reference/react)
+- 📖 [Vite](https://vite.dev/guide/)
+- 📖 [Spring Boot](https://docs.spring.io/spring-boot/docs/current/reference/html/)
+- 📖 [Supabase](https://supabase.com/docs)
+- 📖 [PostgreSQL](https://www.postgresql.org/docs/)
+- 📖 [Conventional Commits](https://www.conventionalcommits.org/en/v1.0.0/)
 
 ---
 
 ## 👥 Autores
 
 | 👤 Nome | :octocat: GitHub | 💼 LinkedIn | 📤 Gmail |
-|---------|------------------|-------------|----------|
+| :--- | :--- | :--- | :--- |
 | Daniel Gomes Rolando | [TaroNukem](https://github.com/TaroNukem) | [daniel-gomes-rolando](https://linkedin.com/in/daniel-gomes-rolando) | [danielgomesrolando@gmail.com](mailto:danielgomesrolando@gmail.com) |
 
 ---
 
 ## 🙏 Agradecimentos
 
-* [**Engenharia de Software PUC Minas**](https://www.instagram.com/engsoftwarepucminas/): pelo apoio institucional e pela estrutura acadêmica.
-* [**Prof. Dr. João Paulo Aramuni**](https://github.com/joaopauloaramuni): pelos ensinamentos de Arquitetura de Software e Padrões de Projeto, e pelo template de README.
+- [**Engenharia de Software PUC Minas**](https://www.instagram.com/engsoftwarepucminas/): pelo apoio institucional e pela estrutura acadêmica.
+- [**Prof. Dr. João Paulo Aramuni**](https://github.com/joaopauloaramuni): pelos ensinamentos de Arquitetura de Software e Padrões de Projeto, e pelo template de README.
 
 ---
 
 ## 📄 Licença
 
-Este projeto é de uso acadêmico. Defina aqui a licença do repositório (ex.: [MIT](./LICENSE)).
+Este projeto é de uso acadêmico. Defina aqui a licença do repositório (por exemplo, [MIT](./LICENSE)), caso aplicável.
 
 ---
