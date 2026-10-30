@@ -1,14 +1,12 @@
 
 package com.aluguel.aluguelcarros.service;
 
-import com.aluguel.aluguelcarros.dto.AutomovelDTO;
-import com.aluguel.aluguelcarros.dto.AvaliacaoRequest;
-import com.aluguel.aluguelcarros.dto.PedidoRequest;
-import com.aluguel.aluguelcarros.dto.PedidoResponse;
+import com.aluguel.aluguelcarros.dto.*;
 import com.aluguel.aluguelcarros.exception.RegraNegocioException;
 import com.aluguel.aluguelcarros.model.*;
 import com.aluguel.aluguelcarros.repository.AgenteRepository;
 import com.aluguel.aluguelcarros.repository.AvaliacaoFinanceiraRepository;
+import com.aluguel.aluguelcarros.repository.ContratoCreditoRepository;
 import com.aluguel.aluguelcarros.repository.PedidoAluguelRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -24,6 +22,7 @@ public class AgenteService {
     private final PedidoAluguelRepository pedidoRepository;
     private final AgenteRepository agenteRepository;
     private final AvaliacaoFinanceiraRepository avaliacaoRepository;
+    private final ContratoCreditoRepository contratoCreditoRepository;
 
     // 7.1 - listar todos os pedidos recebidos pelo agente
     public List<PedidoResponse> listarPedidos() {
@@ -153,5 +152,58 @@ public class AgenteService {
         pedidoRepository.save(pedido);
 
         return paraResponse(pedido);
+    }
+
+    @Transactional
+    public ContratoCredito concederCredito(Long pedidoId, CreditoRequest req) {
+
+        // Busca o pedido.
+        PedidoAluguel pedido = pedidoRepository.findById(pedidoId)
+                .orElseThrow(() ->
+                        new RegraNegocioException("Pedido não encontrado"));
+
+        // O pedido precisa estar aprovado.
+        if (pedido.getStatus() != StatusPedido.APROVADO) {
+            throw new RegraNegocioException(
+                    "Só é possível conceder crédito para pedidos aprovados"
+            );
+        }
+
+        // Recupera o agente autenticado.
+        Object principal = SecurityContextHolder
+                .getContext()
+                .getAuthentication()
+                .getPrincipal();
+
+        if (!(principal instanceof Usuario usuarioLogado)) {
+            throw new RegraNegocioException(
+                    "Apenas agentes podem conceder crédito"
+            );
+        }
+
+        Agente agente = agenteRepository.findById(usuarioLogado.getId())
+                .orElseThrow(() ->
+                        new RegraNegocioException("Agente não encontrado"));
+
+        // Verifica se o agente é de um banco.
+        if (agente.getTipo() != TipoAgente.BANCO) {
+            throw new RegraNegocioException(
+                    "Somente agentes de banco podem conceder crédito"
+            );
+        }
+
+        // Cria o contrato de crédito.
+        ContratoCredito contrato = new ContratoCredito();
+
+        contrato.setBanco(agente);
+        contrato.setValor(req.valor());
+        contrato.setTaxaJuros(req.taxaJuros());
+
+        // Registra o banco responsável pelo pedido.
+        pedido.setBancoCredito(agente);
+
+        pedidoRepository.save(pedido);
+
+        return contratoCreditoRepository.save(contrato);
     }
 }
