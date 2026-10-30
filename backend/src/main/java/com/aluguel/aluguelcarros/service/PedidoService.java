@@ -1,3 +1,4 @@
+
 package com.aluguel.aluguelcarros.service;
 
 import com.aluguel.aluguelcarros.dto.AutomovelDTO;
@@ -38,9 +39,11 @@ public class PedidoService {
     @Transactional
     public PedidoResponse criar(PedidoRequest req) {
         Cliente cliente = clienteLogado();
+
         validarDatas(req.dataInicio(), req.dataFim());
 
-        Automovel automovel = obterOuCriarAutomovel(req.automovel(), cliente);
+        Automovel automovel = obterOuCriarAutomovel(
+                req.automovel(), cliente);
 
         PedidoAluguel pedido = new PedidoAluguel();
         pedido.setCliente(cliente);
@@ -51,15 +54,7 @@ public class PedidoService {
 
         // 6.3 - associar banco de crédito, se informado
         if (req.bancoId() != null) {
-            Agente banco = agenteRepository.findById(req.bancoId())
-                    .orElseThrow(() ->
-                            new RegraNegocioException("Banco não encontrado"));
-
-            if (banco.getTipo() != TipoAgente.BANCO) {
-                throw new RegraNegocioException(
-                        "O agente informado não é um banco");
-            }
-
+            Agente banco = buscarBanco(req.bancoId());
             pedido.setBancoCredito(banco);
         }
 
@@ -100,6 +95,52 @@ public class PedidoService {
         return paraResponse(pedido);
     }
 
+    // 6.5 - modificar pedido somente em análise
+    @Transactional
+    public PedidoResponse modificar(Long id, PedidoRequest req) {
+
+        Cliente cliente = clienteLogado();
+
+        PedidoAluguel pedido = pedidoRepository.findById(id)
+                .orElseThrow(() ->
+                        new EntityNotFoundException("Pedido não encontrado"));
+
+        // Verifica se o pedido pertence ao cliente logado
+        if (!pedido.getCliente().getId().equals(cliente.getId())) {
+            throw new AccessDeniedException(
+                    "Você não tem permissão para modificar este pedido");
+        }
+
+        // Só permite modificar pedidos em análise
+        if (pedido.getStatus() != StatusPedido.EM_ANALISE) {
+            throw new RegraNegocioException(
+                    "Só é possível modificar pedidos em análise");
+        }
+
+        // Valida as novas datas
+        validarDatas(req.dataInicio(), req.dataFim());
+
+        // Atualiza o automóvel
+        Automovel automovel = obterOuCriarAutomovel(
+                req.automovel(), cliente);
+
+        pedido.setAutomovel(automovel);
+
+        // Atualiza as datas
+        pedido.setDataInicio(req.dataInicio());
+        pedido.setDataFim(req.dataFim());
+
+        // Atualiza o banco de crédito
+        if (req.bancoId() != null) {
+            Agente banco = buscarBanco(req.bancoId());
+            pedido.setBancoCredito(banco);
+        } else {
+            pedido.setBancoCredito(null);
+        }
+
+        return paraResponse(pedidoRepository.save(pedido));
+    }
+
     private Cliente clienteLogado() {
         Long id = usuarioLogado.get().getId();
 
@@ -115,18 +156,34 @@ public class PedidoService {
         }
     }
 
-    private Automovel obterOuCriarAutomovel(AutomovelDTO dto, Cliente cliente) {
-        return automovelRepository.findByPlaca(dto.placa()).orElseGet(() -> {
-            Automovel a = new Automovel();
-            a.setMatricula(dto.matricula());
-            a.setAno(dto.ano());
-            a.setMarca(dto.marca());
-            a.setModelo(dto.modelo());
-            a.setPlaca(dto.placa());
-            a.setProprietario(cliente);
+    private Agente buscarBanco(Long bancoId) {
+        Agente banco = agenteRepository.findById(bancoId)
+                .orElseThrow(() ->
+                        new RegraNegocioException("Banco não encontrado"));
 
-            return automovelRepository.save(a);
-        });
+        if (banco.getTipo() != TipoAgente.BANCO) {
+            throw new RegraNegocioException(
+                    "O agente informado não é um banco");
+        }
+
+        return banco;
+    }
+
+    private Automovel obterOuCriarAutomovel(
+            AutomovelDTO dto, Cliente cliente) {
+
+        return automovelRepository.findByPlaca(dto.placa())
+                .orElseGet(() -> {
+                    Automovel a = new Automovel();
+                    a.setMatricula(dto.matricula());
+                    a.setAno(dto.ano());
+                    a.setMarca(dto.marca());
+                    a.setModelo(dto.modelo());
+                    a.setPlaca(dto.placa());
+                    a.setProprietario(cliente);
+
+                    return automovelRepository.save(a);
+                });
     }
 
     private PedidoResponse paraResponse(PedidoAluguel p) {

@@ -44,4 +44,12 @@ public class PedidoController {
     public PedidoResponse buscar(@PathVariable Long id) {
         return pedidoService.buscarMeu(id);
     }
+
+    @PutMapping("/{id}")
+    public PedidoResponse modificar(
+            @PathVariable Long id,
+            @Valid @RequestBody PedidoRequest req) {
+
+        return pedidoService.modificar(id, req);
+    }
 }
