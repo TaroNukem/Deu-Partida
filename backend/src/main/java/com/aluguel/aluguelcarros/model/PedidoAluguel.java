@@ -1,25 +1,35 @@
+
 package com.aluguel.aluguelcarros.model;
 
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
-import org.springframework.cglib.core.Local;
 
 import java.time.LocalDate;
 
 @Entity
 @Table(name = "pedido_aluguel")
-@Getter @Setter @NoArgsConstructor
+@Getter
+@Setter
+@NoArgsConstructor
 public class PedidoAluguel {
-    @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
+
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @ManyToOne(optional = false) @JoinColumn(name = "cliente_id")
+    @ManyToOne(optional = false)
+    @JoinColumn(name = "cliente_id")
     private Cliente cliente;
 
-    @ManyToOne(optional = false) @JoinColumn(name = "automovel_id")
+    @ManyToOne(optional = false)
+    @JoinColumn(name = "automovel_id")
     private Automovel automovel;
+
+    @ManyToOne(optional = true)
+    @JoinColumn(name = "banco_credito_id")
+    private Agente bancoCredito;
 
     private LocalDate dataInicio;
     private LocalDate dataFim;

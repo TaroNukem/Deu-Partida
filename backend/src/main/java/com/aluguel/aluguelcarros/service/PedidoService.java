@@ -1,13 +1,17 @@
+
 package com.aluguel.aluguelcarros.service;
 
 import com.aluguel.aluguelcarros.dto.AutomovelDTO;
 import com.aluguel.aluguelcarros.dto.PedidoRequest;
 import com.aluguel.aluguelcarros.dto.PedidoResponse;
 import com.aluguel.aluguelcarros.exception.RegraNegocioException;
+import com.aluguel.aluguelcarros.model.Agente;
 import com.aluguel.aluguelcarros.model.Automovel;
 import com.aluguel.aluguelcarros.model.Cliente;
 import com.aluguel.aluguelcarros.model.PedidoAluguel;
 import com.aluguel.aluguelcarros.model.StatusPedido;
+import com.aluguel.aluguelcarros.model.TipoAgente;
+import com.aluguel.aluguelcarros.repository.AgenteRepository;
 import com.aluguel.aluguelcarros.repository.AutomovelRepository;
 import com.aluguel.aluguelcarros.repository.ClienteRepository;
 import com.aluguel.aluguelcarros.repository.PedidoAluguelRepository;
@@ -25,9 +29,10 @@ public class PedidoService {
     private final PedidoAluguelRepository pedidoRepository;
     private final AutomovelRepository automovelRepository;
     private final ClienteRepository clienteRepository;
+    private final AgenteRepository agenteRepository;
     private final UsuarioLogado usuarioLogado;
 
-    // 6.2 - criar
+    // 6.2 e 6.3 - criar pedido
     @Transactional
     public PedidoResponse criar(PedidoRequest req) {
         Cliente cliente = clienteLogado();
@@ -42,18 +47,34 @@ public class PedidoService {
         pedido.setDataFim(req.dataFim());
         pedido.setStatus(StatusPedido.EM_ANALISE);
 
+        // 6.3 - associar banco de crédito, se informado
+        if (req.bancoId() != null) {
+            Agente banco = agenteRepository.findById(req.bancoId())
+                    .orElseThrow(() ->
+                            new RegraNegocioException("Banco não encontrado"));
+
+            if (banco.getTipo() != TipoAgente.BANCO) {
+                throw new RegraNegocioException(
+                        "O agente informado não é um banco");
+            }
+
+            pedido.setBancoCredito(banco);
+        }
+
         return paraResponse(pedidoRepository.save(pedido));
     }
 
     private Cliente clienteLogado() {
         Long id = usuarioLogado.get().getId();
         return clienteRepository.findById(id)
-                .orElseThrow(() -> new RegraNegocioException("Cliente não encontrado"));
+                .orElseThrow(() ->
+                        new RegraNegocioException("Cliente não encontrado"));
     }
 
     private void validarDatas(LocalDate inicio, LocalDate fim) {
         if (!fim.isAfter(inicio)) {
-            throw new RegraNegocioException("A data final deve ser depois da data inicial");
+            throw new RegraNegocioException(
+                    "A data final deve ser depois da data inicial");
         }
     }
 
@@ -72,10 +93,24 @@ public class PedidoService {
 
     private PedidoResponse paraResponse(PedidoAluguel p) {
         Automovel a = p.getAutomovel();
-        AutomovelDTO autoDto = new AutomovelDTO(a.getId(), a.getMatricula(), a.getAno(),
-                a.getMarca(), a.getModelo(), a.getPlaca());
 
-        return new PedidoResponse(p.getId(), autoDto, p.getDataInicio(), p.getDataFim(),
-                p.getDataPedido(), p.getStatus(), p.getCliente().getNome());
+        AutomovelDTO autoDto = new AutomovelDTO(
+                a.getId(),
+                a.getMatricula(),
+                a.getAno(),
+                a.getMarca(),
+                a.getModelo(),
+                a.getPlaca()
+        );
+
+        return new PedidoResponse(
+                p.getId(),
+                autoDto,
+                p.getDataInicio(),
+                p.getDataFim(),
+                p.getDataPedido(),
+                p.getStatus(),
+                p.getCliente().getNome()
+        );
     }
 }
