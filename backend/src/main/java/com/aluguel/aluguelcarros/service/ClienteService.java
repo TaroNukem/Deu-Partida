@@ -34,6 +34,10 @@ public class ClienteService {
     public ClienteResponse atualizar(ClienteRequest req) {
         Cliente c = clienteLogado();
 
+        if (req.rendimentos() != null && req.rendimentos().size() > 3) {
+            throw new RegraNegocioException("O cliente pode ter no máximo 3 rendimentos");
+        }
+
         if (!c.getCpf().equals(req.cpf())
                 && clienteRepository.existsByCpfAndIdNot(req.cpf(), c.getId())) {
             throw new RegraNegocioException("CPF já cadastrado em outro cliente");
