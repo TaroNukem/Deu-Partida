@@ -10,7 +10,9 @@ import java.time.LocalDate;
 
 @Entity
 @Table(name = "contrato_credito")
-@Getter @Setter @NoArgsConstructor
+@Getter
+@Setter
+@NoArgsConstructor
 public class ContratoCredito {
 
     @Id
@@ -21,11 +23,15 @@ public class ContratoCredito {
     @JoinColumn(name = "banco_id")
     private Agente banco;
 
+    @OneToOne(optional = false)
+    @JoinColumn(name = "pedido_id", unique = true)
+    private PedidoAluguel pedido;
+
     @Column(nullable = false, precision = 12, scale = 2)
     private BigDecimal valor;
 
     @Column(nullable = false, precision = 5, scale = 2)
-    private BigDecimal taxaJuros;   // em %, por exemplo 1.99
+    private BigDecimal taxaJuros;
 
     private LocalDate data = LocalDate.now();
 }

@@ -4,10 +4,7 @@ package com.aluguel.aluguelcarros.service;
 import com.aluguel.aluguelcarros.dto.*;
 import com.aluguel.aluguelcarros.exception.RegraNegocioException;
 import com.aluguel.aluguelcarros.model.*;
-import com.aluguel.aluguelcarros.repository.AgenteRepository;
-import com.aluguel.aluguelcarros.repository.AvaliacaoFinanceiraRepository;
-import com.aluguel.aluguelcarros.repository.ContratoCreditoRepository;
-import com.aluguel.aluguelcarros.repository.PedidoAluguelRepository;
+import com.aluguel.aluguelcarros.repository.*;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
@@ -23,6 +20,7 @@ public class AgenteService {
     private final AgenteRepository agenteRepository;
     private final AvaliacaoFinanceiraRepository avaliacaoRepository;
     private final ContratoCreditoRepository contratoCreditoRepository;
+    private final ContratoAluguelRepository contratoAluguelRepository;
 
     // 7.1 - listar todos os pedidos recebidos pelo agente
     public List<PedidoResponse> listarPedidos() {
@@ -196,14 +194,57 @@ public class AgenteService {
         ContratoCredito contrato = new ContratoCredito();
 
         contrato.setBanco(agente);
+        contrato.setPedido(pedido);
         contrato.setValor(req.valor());
         contrato.setTaxaJuros(req.taxaJuros());
 
-        // Registra o banco responsável pelo pedido.
+// Registra o banco responsável pelo pedido.
         pedido.setBancoCredito(agente);
 
         pedidoRepository.save(pedido);
 
         return contratoCreditoRepository.save(contrato);
+    }
+
+    // 7.5 - executar contrato de pedido aprovado
+    @Transactional
+    public ContratoAluguel executarContrato(Long pedidoId) {
+
+        // Busca o pedido.
+        PedidoAluguel pedido = pedidoRepository.findById(pedidoId)
+                .orElseThrow(() ->
+                        new RegraNegocioException("Pedido não encontrado"));
+
+        // Verifica se o pedido está aprovado.
+        if (pedido.getStatus() != StatusPedido.APROVADO) {
+            throw new RegraNegocioException(
+                    "Só é possível executar contratos de pedidos aprovados"
+            );
+        }
+
+        // Verifica se o pedido já possui contrato de aluguel.
+        if (contratoAluguelRepository.existsByPedidoId(pedidoId)) {
+            throw new RegraNegocioException(
+                    "Este pedido já possui um contrato de aluguel"
+            );
+        }
+
+        // Busca o contrato de crédito, caso exista.
+        ContratoCredito credito = contratoCreditoRepository
+                .findByPedidoId(pedidoId)
+                .orElse(null);
+
+        // Cria o contrato de aluguel.
+        ContratoAluguel contrato = new ContratoAluguel();
+
+        contrato.setPedido(pedido);
+        contrato.setContratoCredito(credito);
+
+        // Atualiza o status do pedido.
+        pedido.setStatus(StatusPedido.CONTRATATO);
+
+        pedidoRepository.save(pedido);
+
+        return contratoAluguelRepository.save(contrato);
     }
 }
