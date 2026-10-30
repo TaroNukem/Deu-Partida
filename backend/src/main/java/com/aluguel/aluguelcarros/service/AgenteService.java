@@ -3,6 +3,7 @@ package com.aluguel.aluguelcarros.service;
 
 import com.aluguel.aluguelcarros.dto.AutomovelDTO;
 import com.aluguel.aluguelcarros.dto.AvaliacaoRequest;
+import com.aluguel.aluguelcarros.dto.PedidoRequest;
 import com.aluguel.aluguelcarros.dto.PedidoResponse;
 import com.aluguel.aluguelcarros.exception.RegraNegocioException;
 import com.aluguel.aluguelcarros.model.*;
@@ -110,5 +111,47 @@ public class AgenteService {
                 p.getStatus(),
                 p.getCliente().getNome()
         );
+    }
+
+    @Transactional
+    public PedidoResponse modificarPedido(Long id, PedidoRequest req) {
+
+        PedidoAluguel pedido = pedidoRepository.findById(id)
+                .orElseThrow(() ->
+                        new RegraNegocioException("Pedido não encontrado"));
+
+        // O agente só pode modificar pedidos em análise ou aprovados.
+        if (pedido.getStatus() != StatusPedido.EM_ANALISE &&
+                pedido.getStatus() != StatusPedido.APROVADO) {
+
+            throw new RegraNegocioException(
+                    "Só é possível modificar pedidos em análise ou aprovados"
+            );
+        }
+
+        // Valida as datas.
+        if (!req.dataFim().isAfter(req.dataInicio())) {
+            throw new RegraNegocioException(
+                    "A data final deve ser posterior à data inicial"
+            );
+        }
+
+        // Atualiza as datas do pedido.
+        pedido.setDataInicio(req.dataInicio());
+        pedido.setDataFim(req.dataFim());
+
+        // Atualiza os dados do automóvel.
+        Automovel automovel = pedido.getAutomovel();
+        AutomovelDTO dados = req.automovel();
+
+        automovel.setMatricula(dados.matricula());
+        automovel.setAno(dados.ano());
+        automovel.setMarca(dados.marca());
+        automovel.setModelo(dados.modelo());
+        automovel.setPlaca(dados.placa());
+
+        pedidoRepository.save(pedido);
+
+        return paraResponse(pedido);
     }
 }
