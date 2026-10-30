@@ -3,7 +3,6 @@ package com.aluguel.aluguelcarros.controller;
 
 import com.aluguel.aluguelcarros.dto.*;
 import com.aluguel.aluguelcarros.model.ContratoAluguel;
-import com.aluguel.aluguelcarros.model.ContratoCredito;
 import com.aluguel.aluguelcarros.service.AgenteService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
@@ -43,7 +42,7 @@ public class AgenteController {
 
     // POST /agente/pedidos/{id}/credito
     @PostMapping("/pedidos/{id}/credito")
-    public ContratoCredito concederCredito(
+    public ContratoCreditoResponse concederCredito(
             @PathVariable Long id,
             @RequestBody CreditoRequest req) {
 
@@ -52,7 +51,7 @@ public class AgenteController {
 
     // POST /agente/pedidos/{id}/contrato
     @PostMapping("/pedidos/{id}/contrato")
-    public ContratoAluguel executarContrato(
+    public ContratoAluguelResponse executarContrato(
             @PathVariable Long id) {
 
         return agenteService.executarContrato(id);

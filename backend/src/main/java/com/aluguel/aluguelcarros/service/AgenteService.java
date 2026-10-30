@@ -34,40 +34,46 @@ public class AgenteService {
     @Transactional
     public void avaliar(Long pedidoId, AvaliacaoRequest req) {
 
-        // Busca o pedido
+        // Busca o pedido.
         PedidoAluguel pedido = pedidoRepository.findById(pedidoId)
                 .orElseThrow(() ->
                         new RegraNegocioException("Pedido não encontrado"));
 
-        // Verifica se o pedido ainda está em análise
+        // Verifica se o pedido ainda está em análise.
         if (pedido.getStatus() != StatusPedido.EM_ANALISE) {
             throw new RegraNegocioException(
                     "Só é possível avaliar pedidos em análise");
         }
 
-        // Recupera o usuário autenticado
+        // Recupera o usuário autenticado.
         Object principal = SecurityContextHolder
                 .getContext()
                 .getAuthentication()
                 .getPrincipal();
 
-        if (!(principal instanceof Agente agenteLogado)) {
+        if (!(principal instanceof Usuario usuarioLogado)) {
             throw new RegraNegocioException(
                     "Apenas agentes podem realizar avaliações");
         }
 
-        // Busca o agente no banco
-        Agente agente = agenteRepository.findById(agenteLogado.getId())
+        // Busca o agente no banco.
+        Agente agente = agenteRepository.findById(usuarioLogado.getId())
                 .orElseThrow(() ->
                         new RegraNegocioException("Agente não encontrado"));
 
-        // Impede avaliações duplicadas
+        // Verifica se o usuário realmente é um agente.
+        if (!agente.getPerfil().equals(Perfil.AGENTE)) {
+            throw new RegraNegocioException(
+                    "Apenas agentes podem realizar avaliações");
+        }
+
+        // Impede avaliações duplicadas.
         if (avaliacaoRepository.existsByPedidoId(pedidoId)) {
             throw new RegraNegocioException(
                     "Este pedido já possui uma avaliação financeira");
         }
 
-        // Cria a avaliação
+        // Cria a avaliação.
         AvaliacaoFinanceira avaliacao = new AvaliacaoFinanceira();
 
         avaliacao.setPedido(pedido);
@@ -75,14 +81,14 @@ public class AgenteService {
         avaliacao.setParecerPositivo(req.parecerPositivo());
         avaliacao.setObservacao(req.observacao());
 
-        // Atualiza o status do pedido
+        // Atualiza o status do pedido.
         if (req.parecerPositivo()) {
             pedido.setStatus(StatusPedido.APROVADO);
         } else {
             pedido.setStatus(StatusPedido.REPROVADO);
         }
 
-        // Salva a avaliação
+        // Salva a avaliação.
         avaliacaoRepository.save(avaliacao);
     }
 
@@ -110,6 +116,7 @@ public class AgenteService {
         );
     }
 
+    // 7.3 - modificar pedido
     @Transactional
     public PedidoResponse modificarPedido(Long id, PedidoRequest req) {
 
@@ -152,8 +159,10 @@ public class AgenteService {
         return paraResponse(pedido);
     }
 
+    // 7.4 - conceder crédito
     @Transactional
-    public ContratoCredito concederCredito(Long pedidoId, CreditoRequest req) {
+    public ContratoCreditoResponse concederCredito(
+            Long pedidoId, CreditoRequest req) {
 
         // Busca o pedido.
         PedidoAluguel pedido = pedidoRepository.findById(pedidoId)
@@ -164,6 +173,13 @@ public class AgenteService {
         if (pedido.getStatus() != StatusPedido.APROVADO) {
             throw new RegraNegocioException(
                     "Só é possível conceder crédito para pedidos aprovados"
+            );
+        }
+
+        // Impede a concessão de crédito duplicada.
+        if (contratoCreditoRepository.findByPedidoId(pedidoId).isPresent()) {
+            throw new RegraNegocioException(
+                    "Este pedido já possui um contrato de crédito"
             );
         }
 
@@ -198,17 +214,30 @@ public class AgenteService {
         contrato.setValor(req.valor());
         contrato.setTaxaJuros(req.taxaJuros());
 
-// Registra o banco responsável pelo pedido.
+        // Registra o banco responsável pelo pedido.
         pedido.setBancoCredito(agente);
 
         pedidoRepository.save(pedido);
 
-        return contratoCreditoRepository.save(contrato);
+        // Salva o contrato de crédito.
+        ContratoCredito contratoSalvo =
+                contratoCreditoRepository.save(contrato);
+
+        // Converte a entidade para DTO de resposta.
+        return new ContratoCreditoResponse(
+                contratoSalvo.getId(),
+                pedido.getId(),
+                agente.getNome(),
+                contratoSalvo.getValor(),
+                contratoSalvo.getTaxaJuros(),
+                contratoSalvo.getData()
+        );
     }
 
     // 7.5 - executar contrato de pedido aprovado
+    // 7.5 - executar contrato de pedido aprovado
     @Transactional
-    public ContratoAluguel executarContrato(Long pedidoId) {
+    public ContratoAluguelResponse executarContrato(Long pedidoId) {
 
         // Busca o pedido.
         PedidoAluguel pedido = pedidoRepository.findById(pedidoId)
@@ -245,6 +274,16 @@ public class AgenteService {
 
         pedidoRepository.save(pedido);
 
-        return contratoAluguelRepository.save(contrato);
+        // Salva o contrato.
+        ContratoAluguel contratoSalvo =
+                contratoAluguelRepository.save(contrato);
+
+        // Retorna somente os dados necessários.
+        return new ContratoAluguelResponse(
+                contratoSalvo.getId(),
+                pedido.getId(),
+                credito != null ? credito.getId() : null,
+                contratoSalvo.getDataAssinatura()
+        );
     }
 }

@@ -1,3 +1,4 @@
+
 package com.aluguel.aluguelcarros.repository;
 
 import com.aluguel.aluguelcarros.model.ContratoCredito;
@@ -7,5 +8,6 @@ import java.util.Optional;
 
 public interface ContratoCreditoRepository
         extends JpaRepository<ContratoCredito, Long> {
+
     Optional<ContratoCredito> findByPedidoId(Long pedidoId);
 }
