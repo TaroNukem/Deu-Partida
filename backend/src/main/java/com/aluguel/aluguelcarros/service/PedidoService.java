@@ -98,39 +98,31 @@ public class PedidoService {
     // 6.5 - modificar pedido somente em análise
     @Transactional
     public PedidoResponse modificar(Long id, PedidoRequest req) {
-
         Cliente cliente = clienteLogado();
 
         PedidoAluguel pedido = pedidoRepository.findById(id)
                 .orElseThrow(() ->
                         new EntityNotFoundException("Pedido não encontrado"));
 
-        // Verifica se o pedido pertence ao cliente logado
         if (!pedido.getCliente().getId().equals(cliente.getId())) {
             throw new AccessDeniedException(
                     "Você não tem permissão para modificar este pedido");
         }
 
-        // Só permite modificar pedidos em análise
         if (pedido.getStatus() != StatusPedido.EM_ANALISE) {
             throw new RegraNegocioException(
                     "Só é possível modificar pedidos em análise");
         }
 
-        // Valida as novas datas
         validarDatas(req.dataInicio(), req.dataFim());
 
-        // Atualiza o automóvel
         Automovel automovel = obterOuCriarAutomovel(
                 req.automovel(), cliente);
 
         pedido.setAutomovel(automovel);
-
-        // Atualiza as datas
         pedido.setDataInicio(req.dataInicio());
         pedido.setDataFim(req.dataFim());
 
-        // Atualiza o banco de crédito
         if (req.bancoId() != null) {
             Agente banco = buscarBanco(req.bancoId());
             pedido.setBancoCredito(banco);
@@ -141,6 +133,32 @@ public class PedidoService {
         return paraResponse(pedidoRepository.save(pedido));
     }
 
+    // 6.6 - cancelar pedido até a execução do contrato
+    @Transactional
+    public PedidoResponse cancelar(Long id) {
+        Cliente cliente = clienteLogado();
+
+        PedidoAluguel pedido = pedidoRepository.findById(id)
+                .orElseThrow(() ->
+                        new EntityNotFoundException("Pedido não encontrado"));
+
+        if (!pedido.getCliente().getId().equals(cliente.getId())) {
+            throw new AccessDeniedException(
+                    "Você não tem permissão para cancelar este pedido");
+        }
+
+        if (pedido.getStatus() == StatusPedido.CONTRATATO
+                || pedido.getStatus() == StatusPedido.CANCELADO) {
+            throw new RegraNegocioException(
+                    "Não é possível cancelar um pedido contratado ou já cancelado");
+        }
+
+        pedido.setStatus(StatusPedido.CANCELADO);
+
+        return paraResponse(pedidoRepository.save(pedido));
+    }
+
+    // Identifica o cliente autenticado
     private Cliente clienteLogado() {
         Long id = usuarioLogado.get().getId();
 
@@ -149,6 +167,7 @@ public class PedidoService {
                         new RegraNegocioException("Cliente não encontrado"));
     }
 
+    // Valida as datas do pedido
     private void validarDatas(LocalDate inicio, LocalDate fim) {
         if (!fim.isAfter(inicio)) {
             throw new RegraNegocioException(
@@ -156,6 +175,7 @@ public class PedidoService {
         }
     }
 
+    // Busca e valida o banco de crédito
     private Agente buscarBanco(Long bancoId) {
         Agente banco = agenteRepository.findById(bancoId)
                 .orElseThrow(() ->
@@ -169,6 +189,7 @@ public class PedidoService {
         return banco;
     }
 
+    // Busca um automóvel pela placa ou cria um novo
     private Automovel obterOuCriarAutomovel(
             AutomovelDTO dto, Cliente cliente) {
 
@@ -186,6 +207,7 @@ public class PedidoService {
                 });
     }
 
+    // Converte a entidade para DTO de resposta
     private PedidoResponse paraResponse(PedidoAluguel p) {
         Automovel a = p.getAutomovel();
 

@@ -52,4 +52,9 @@ public class PedidoController {
 
         return pedidoService.modificar(id, req);
     }
+
+    @DeleteMapping("/{id}")
+    public PedidoResponse cancelar(@PathVariable Long id) {
+        return pedidoService.cancelar(id);
+    }
 }
