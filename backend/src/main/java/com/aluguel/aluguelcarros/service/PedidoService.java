@@ -1,4 +1,3 @@
-
 package com.aluguel.aluguelcarros.service;
 
 import com.aluguel.aluguelcarros.dto.AutomovelDTO;
@@ -16,11 +15,14 @@ import com.aluguel.aluguelcarros.repository.AutomovelRepository;
 import com.aluguel.aluguelcarros.repository.ClienteRepository;
 import com.aluguel.aluguelcarros.repository.PedidoAluguelRepository;
 import com.aluguel.aluguelcarros.security.UsuarioLogado;
+import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
+import java.util.List;
 
 @Service
 @RequiredArgsConstructor
@@ -64,8 +66,43 @@ public class PedidoService {
         return paraResponse(pedidoRepository.save(pedido));
     }
 
+    // 6.4 - listar pedidos do cliente logado
+    public List<PedidoResponse> listarMeus(StatusPedido status) {
+        Cliente cliente = clienteLogado();
+
+        List<PedidoAluguel> pedidos;
+
+        if (status == null) {
+            pedidos = pedidoRepository.findByClienteId(cliente.getId());
+        } else {
+            pedidos = pedidoRepository.findByClienteIdAndStatus(
+                    cliente.getId(), status);
+        }
+
+        return pedidos.stream()
+                .map(this::paraResponse)
+                .toList();
+    }
+
+    // 6.4 - buscar pedido específico do cliente logado
+    public PedidoResponse buscarMeu(Long id) {
+        Cliente cliente = clienteLogado();
+
+        PedidoAluguel pedido = pedidoRepository.findById(id)
+                .orElseThrow(() ->
+                        new EntityNotFoundException("Pedido não encontrado"));
+
+        if (!pedido.getCliente().getId().equals(cliente.getId())) {
+            throw new AccessDeniedException(
+                    "Você não tem permissão para acessar este pedido");
+        }
+
+        return paraResponse(pedido);
+    }
+
     private Cliente clienteLogado() {
         Long id = usuarioLogado.get().getId();
+
         return clienteRepository.findById(id)
                 .orElseThrow(() ->
                         new RegraNegocioException("Cliente não encontrado"));
@@ -87,6 +124,7 @@ public class PedidoService {
             a.setModelo(dto.modelo());
             a.setPlaca(dto.placa());
             a.setProprietario(cliente);
+
             return automovelRepository.save(a);
         });
     }
