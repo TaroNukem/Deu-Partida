@@ -36,7 +36,7 @@ export default function Cadastro() {
 
     try {
       await registrar(dados);
-      navigate("/login");
+      navigate("/");
     } catch {
       setErro("Não foi possível realizar o cadastro. Verifique os dados.");
     }
