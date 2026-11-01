@@ -16,14 +16,47 @@ export default function MeuCadastro() {
       .catch(() => {
         if (ativo) setErro("Erro ao carregar");
       });
+
     return () => {
       ativo = false;
     };
   }, []);
-if(erro) return <p role="alert">{erro}</p>
-if(!cliente) return <p>Carregando...</p>
 
-return(
+  if (erro) return <p role="alert">{erro}</p>;
+  if (!cliente) return <p>Carregando...</p>;
+
+  const rendimentos = cliente.rendimentos ?? [];
+
+  function adicionarRendimento() {
+    setCliente({
+      ...cliente!,
+      rendimentos: [...rendimentos, { entidadeEmpregadora: "", valor: 0 }],
+    });
+  }
+
+  function removerRendimento(index: number) {
+    setCliente({
+      ...cliente!,
+      rendimentos: rendimentos.filter((_, i) => i !== index),
+    });
+  }
+
+  function atualizarRendimento(
+    index: number,
+    campo: "entidadeEmpregadora" | "valor",
+    valor: string
+  ) {
+    setCliente({
+      ...cliente!,
+      rendimentos: rendimentos.map((r, i) =>
+        i === index
+          ? { ...r, [campo]: campo === "valor" ? Number(valor) : valor }
+          : r
+      ),
+    });
+  }
+
+  return (
     <main>
       <h1>Meu cadastro</h1>
 
@@ -62,7 +95,42 @@ return(
           value={cliente.profissao ?? ""}
           onChange={(e) => setCliente({ ...cliente, profissao: e.target.value })}
         />
+
+        <h2>Rendimentos</h2>
+
+        {rendimentos.map((rendimento, index) => (
+          <div key={rendimento.id ?? index}>
+            <input
+              placeholder="Entidade empregadora"
+              value={rendimento.entidadeEmpregadora}
+              onChange={(e) =>
+                atualizarRendimento(index, "entidadeEmpregadora", e.target.value)
+              }
+            />
+            <input
+              type="number"
+              placeholder="Valor"
+              value={rendimento.valor}
+              onChange={(e) =>
+                atualizarRendimento(index, "valor", e.target.value)
+              }
+            />
+            <button type="button" onClick={() => removerRendimento(index)}>
+              Remover
+            </button>
+          </div>
+        ))}
+
+        {rendimentos.length >= 3 && <p>Máximo de 3 rendimentos</p>}
+
+        <button
+          type="button"
+          onClick={adicionarRendimento}
+          disabled={rendimentos.length >= 3}
+        >
+          Adicionar rendimento
+        </button>
       </form>
     </main>
-)
+  );
 }
