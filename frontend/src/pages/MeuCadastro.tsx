@@ -1,10 +1,12 @@
-import { useEffect, useState } from "react";
-import { buscarMeuCadastro } from "../services/clienteService";
+import { useEffect, useState, type FormEvent } from "react";
+import { buscarMeuCadastro, atualizarCadastro } from "../services/clienteService";
 import type { Cliente } from "../types";
 
 export default function MeuCadastro() {
   const [cliente, setCliente] = useState<Cliente | null>(null);
   const [erro, setErro] = useState<string | null>(null);
+  const [mensagem, setMensagem] = useState<string | null>(null);
+  const [salvando, setSalvando] = useState(false);
 
   useEffect(() => {
     let ativo = true;
@@ -56,11 +58,29 @@ export default function MeuCadastro() {
     });
   }
 
+  async function handleSubmit(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    setMensagem(null);
+    setSalvando(true);
+
+    try {
+      const atualizado = await atualizarCadastro(cliente!);
+      setCliente(atualizado);
+      setMensagem("Salvo com sucesso!");
+    } catch (err: any) {
+      setMensagem(
+        err.response?.data?.mensagem ?? "Erro ao salvar o cadastro"
+      );
+    } finally {
+      setSalvando(false);
+    }
+  }
+
   return (
     <main>
       <h1>Meu cadastro</h1>
 
-      <form>
+      <form onSubmit={handleSubmit}>
         <label htmlFor="nome">Nome</label>
         <input
           id="nome"
@@ -130,6 +150,14 @@ export default function MeuCadastro() {
         >
           Adicionar rendimento
         </button>
+
+        <div>
+          <button type="submit" disabled={salvando}>
+            {salvando ? "Salvando..." : "Salvar"}
+          </button>
+        </div>
+
+        {mensagem && <p role="status">{mensagem}</p>}
       </form>
     </main>
   );
