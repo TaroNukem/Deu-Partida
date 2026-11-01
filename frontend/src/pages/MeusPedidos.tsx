@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { listarPedidos } from "../services/pedidoService";
 import type { Pedido, StatusPedido } from "../types";
+import StatusBadge from "../components/StatusBadge";
 
 const rotulosStatus: Record<StatusPedido, string> = {
   EM_ANALISE: "Em análise",
@@ -85,7 +86,9 @@ export default function MeusPedidos() {
                 <td>
                   {pedido.dataInicio} a {pedido.dataFim}
                 </td>
-                <td>{rotulosStatus[pedido.status]}</td>
+                <td>
+                  <StatusBadge status={pedido.status} />
+                </td>
                 <td>
                   <button
                     type="button"
