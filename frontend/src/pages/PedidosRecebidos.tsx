@@ -6,12 +6,13 @@ import {
   executarContrato,
   type Parecer,
 } from "../services/agentePedidoService";
-import type { Pedido } from "../types";
+import type { Pedido } from "../types/types";
 import StatusBadge from "../components/StatusBadge";
 import { useAuth } from "../context/AuthContext";
 
 export default function PedidosRecebidos() {
   const { usuario } = useAuth();
+  const ehBanco = usuario?.tipoAgente === "BANCO";
 
   const [pedidos, setPedidos] = useState<Pedido[]>([]);
   const [carregando, setCarregando] = useState(true);
@@ -22,7 +23,7 @@ export default function PedidosRecebidos() {
   const [valorCredito, setValorCredito] = useState("");
   const [taxaCredito, setTaxaCredito] = useState("");
   const [enviando, setEnviando] = useState(false);
-  const [mensagem, setMensagem] = useState<string | null>(null);
+  const [aviso, setAviso] = useState<{ texto: string; ok: boolean } | null>(null);
 
   function carregar() {
     setCarregando(true);
@@ -41,190 +42,251 @@ export default function PedidosRecebidos() {
     setObservacao("");
     setValorCredito("");
     setTaxaCredito("");
-    setMensagem(null);
+    setAviso(null);
+  }
+
+  function fechar() {
+    setSelecionado(null);
+    setAviso(null);
   }
 
   function erroDe(err: any, padrao: string) {
     return err.response?.data?.mensagem ?? padrao;
   }
 
-  async function handleAvaliar(parecer: Parecer) {
-    if (!selecionado?.id) return;
-    if (!observacao.trim()) {
-      setMensagem("Escreva uma observação antes de avaliar");
-      return;
-    }
-
+  async function executar(
+    acao: () => Promise<unknown>,
+    sucesso: string,
+    padrao: string
+  ) {
     setEnviando(true);
-    setMensagem(null);
+    setAviso(null);
 
     try {
-      await avaliar(selecionado.id, observacao, parecer);
-      setMensagem("Avaliação registrada");
+      await acao();
+      setAviso({ texto: sucesso, ok: true });
       setSelecionado(null);
       await carregar();
     } catch (err: any) {
-      setMensagem(erroDe(err, "Erro ao registrar avaliação"));
+      setAviso({ texto: erroDe(err, padrao), ok: false });
     } finally {
       setEnviando(false);
     }
   }
 
-  async function handleConcederCredito() {
+  function handleAvaliar(parecer: Parecer) {
+    if (!selecionado?.id) return;
+
+    if (!observacao.trim()) {
+      setAviso({ texto: "Escreva uma observação antes de avaliar", ok: false });
+      return;
+    }
+
+    const id = selecionado.id;
+    void executar(
+      () => avaliar(id, observacao, parecer),
+      parecer === "POSITIVO" ? "Pedido aceito" : "Pedido recusado",
+      "Erro ao registrar avaliação"
+    );
+  }
+
+  function handleCredito() {
     if (!selecionado?.id) return;
 
     const valor = Number(valorCredito);
     const taxa = Number(taxaCredito);
 
     if (!valor || !taxa) {
-      setMensagem("Informe o valor e a taxa do crédito");
+      setAviso({ texto: "Informe o valor e a taxa do crédito", ok: false });
       return;
     }
 
-    setEnviando(true);
-    setMensagem(null);
-
-    try {
-      await concederCredito(selecionado.id, valor, taxa);
-      setMensagem("Crédito concedido");
-      setSelecionado(null);
-      await carregar();
-    } catch (err: any) {
-      setMensagem(erroDe(err, "Erro ao conceder crédito"));
-    } finally {
-      setEnviando(false);
-    }
+    const id = selecionado.id;
+    void executar(
+      () => concederCredito(id, valor, taxa),
+      "Crédito concedido",
+      "Erro ao conceder crédito"
+    );
   }
 
-  async function handleExecutarContrato() {
+  function handleContrato() {
     if (!selecionado?.id) return;
     if (!window.confirm("Confirma a execução do contrato?")) return;
 
-    setEnviando(true);
-    setMensagem(null);
-
-    try {
-      await executarContrato(selecionado.id);
-      setMensagem("Contrato executado");
-      setSelecionado(null);
-      await carregar();
-    } catch (err: any) {
-      setMensagem(erroDe(err, "Erro ao executar contrato"));
-    } finally {
-      setEnviando(false);
-    }
+    const id = selecionado.id;
+    void executar(
+      () => executarContrato(id),
+      "Contrato executado",
+      "Erro ao executar contrato"
+    );
   }
 
-  if (carregando && pedidos.length === 0) return <p>Carregando...</p>;
-  if (erro) return <p role="alert">{erro}</p>;
-
-  const podeConcederCredito = usuario?.perfil === "AGENTE";
-
   return (
-    <main>
-      <h1>Pedidos recebidos</h1>
+    <>
+      <section className="welcome">
+        <div>
+          <p className="eyebrow">ÁREA DO AGENTE</p>
+          <h1>Pedidos recebidos</h1>
+          <p>Analise os pedidos, emita pareceres e acompanhe os contratos.</p>
+        </div>
+        <span className="role">{ehBanco ? "BANCO" : "EMPRESA"}</span>
+      </section>
 
-      {mensagem && <p role="status">{mensagem}</p>}
-
-      {pedidos.length === 0 ? (
-        <p>Nenhum pedido recebido.</p>
-      ) : (
-        <table>
-          <thead>
-            <tr>
-              <th>Cliente</th>
-              <th>Carro</th>
-              <th>Período</th>
-              <th>Status</th>
-              <th></th>
-            </tr>
-          </thead>
-          <tbody>
-            {pedidos.map((pedido) => (
-              <tr key={pedido.id}>
-                <td>{pedido.clienteNome}</td>
-                <td>
-                  {pedido.automovel.marca} {pedido.automovel.modelo}
-                </td>
-                <td>
-                  {pedido.dataInicio} a {pedido.dataFim}
-                </td>
-                <td>
-                  <StatusBadge status={pedido.status} />
-                </td>
-                <td>
-                  <button type="button" onClick={() => selecionar(pedido)}>
-                    Avaliar
-                  </button>
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
+      {aviso && (
+        <p className={aviso.ok ? "success notice" : "error notice"} role="status">
+          {aviso.texto}
+        </p>
       )}
 
+      <section className="card">
+        <h2>Pedidos</h2>
+
+        {erro ? (
+          <p className="error">{erro}</p>
+        ) : carregando ? (
+          <p>Carregando...</p>
+        ) : pedidos.length === 0 ? (
+          <p>Nenhum pedido recebido.</p>
+        ) : (
+          <div className="table-wrap">
+            <table>
+              <thead>
+                <tr>
+                  <th>Cliente</th>
+                  <th>Carro</th>
+                  <th>Período</th>
+                  <th>Status</th>
+                  <th></th>
+                </tr>
+              </thead>
+              <tbody>
+                {pedidos.map((pedido) => (
+                  <tr
+                    key={pedido.id}
+                    className={selecionado?.id === pedido.id ? "row-selected" : undefined}
+                  >
+                    <td>{pedido.clienteNome}</td>
+                    <td>
+                      {pedido.automovel.marca} {pedido.automovel.modelo}
+                    </td>
+                    <td>
+                      {pedido.dataInicio} até {pedido.dataFim}
+                    </td>
+                    <td>
+                      <StatusBadge status={pedido.status} />
+                    </td>
+                    <td>
+                      <button type="button" onClick={() => selecionar(pedido)}>
+                        Avaliar
+                      </button>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        )}
+      </section>
+
       {selecionado && (
-        <section>
-          <h2>Pedido #{selecionado.id}</h2>
-          <p>
-            {selecionado.clienteNome} — {selecionado.automovel.marca}{" "}
-            {selecionado.automovel.modelo} ({selecionado.automovel.placa})
-          </p>
+        <section className="card">
+          <div className="section-head">
+            <div>
+              <h2>Pedido #{selecionado.id}</h2>
+              <p>
+                {selecionado.clienteNome} · {selecionado.automovel.marca}{" "}
+                {selecionado.automovel.modelo}
+              </p>
+            </div>
+            <StatusBadge status={selecionado.status} />
+          </div>
+
+          <div className="details">
+            <div>
+              <span>Cliente</span>
+              <strong>{selecionado.clienteNome}</strong>
+            </div>
+            <div>
+              <span>Automóvel</span>
+              <strong>
+                {selecionado.automovel.marca} {selecionado.automovel.modelo}
+              </strong>
+            </div>
+            <div>
+              <span>Placa</span>
+              <strong>{selecionado.automovel.placa}</strong>
+            </div>
+            <div>
+              <span>Período</span>
+              <strong>
+                {selecionado.dataInicio} até {selecionado.dataFim}
+              </strong>
+            </div>
+          </div>
+
+          {selecionado.avaliacao && (
+            <p className="subtext">
+              Parecer {selecionado.avaliacao.parecerPositivo ? "positivo" : "negativo"} por{" "}
+              {selecionado.avaliacao.agenteNome}
+              {selecionado.avaliacao.observacao && `: ${selecionado.avaliacao.observacao}`}
+            </p>
+          )}
 
           {selecionado.status === "EM_ANALISE" && (
             <>
-              <label htmlFor="observacao">Observação</label>
-              <textarea
-                id="observacao"
-                value={observacao}
-                onChange={(e) => setObservacao(e.target.value)}
-                rows={4}
-              />
-              <div>
+              <div className="form-grid">
+                <label className="full">
+                  Observação
+                  <textarea
+                    rows={4}
+                    value={observacao}
+                    onChange={(e) => setObservacao(e.target.value)}
+                  />
+                </label>
+              </div>
+              <div className="actions">
                 <button
                   type="button"
                   disabled={enviando}
                   onClick={() => handleAvaliar("POSITIVO")}
                 >
-                  Parecer positivo
+                  Aceitar
                 </button>
                 <button
                   type="button"
+                  className="danger"
                   disabled={enviando}
                   onClick={() => handleAvaliar("NEGATIVO")}
                 >
-                  Parecer negativo
+                  Recusar
                 </button>
               </div>
             </>
           )}
 
-          {podeConcederCredito && selecionado.status === "APROVADO" && (
+          {selecionado.status === "APROVADO" && ehBanco && (
             <>
               <h3>Conceder crédito</h3>
-
-              <label htmlFor="valorCredito">Valor</label>
-              <input
-                id="valorCredito"
-                type="number"
-                value={valorCredito}
-                onChange={(e) => setValorCredito(e.target.value)}
-              />
-
-              <label htmlFor="taxaCredito">Taxa (%)</label>
-              <input
-                id="taxaCredito"
-                type="number"
-                value={taxaCredito}
-                onChange={(e) => setTaxaCredito(e.target.value)}
-              />
-
-              <div>
-                <button
-                  type="button"
-                  disabled={enviando}
-                  onClick={handleConcederCredito}
-                >
+              <div className="form-grid">
+                <label>
+                  Valor (R$)
+                  <input
+                    type="number"
+                    value={valorCredito}
+                    onChange={(e) => setValorCredito(e.target.value)}
+                  />
+                </label>
+                <label>
+                  Taxa (%)
+                  <input
+                    type="number"
+                    value={taxaCredito}
+                    onChange={(e) => setTaxaCredito(e.target.value)}
+                  />
+                </label>
+              </div>
+              <div className="actions">
+                <button type="button" disabled={enviando} onClick={handleCredito}>
                   Conceder crédito
                 </button>
               </div>
@@ -232,22 +294,24 @@ export default function PedidosRecebidos() {
           )}
 
           {selecionado.status === "APROVADO" && (
-            <div>
-              <button
-                type="button"
-                disabled={enviando}
-                onClick={handleExecutarContrato}
-              >
+            <div className="actions mt-md">
+              <button type="button" disabled={enviando} onClick={handleContrato}>
                 Executar contrato
               </button>
             </div>
           )}
 
-          <button type="button" onClick={() => setSelecionado(null)}>
-            Fechar
-          </button>
+          {selecionado.status !== "EM_ANALISE" && selecionado.status !== "APROVADO" && (
+            <p className="subtext">Este pedido não tem ações disponíveis no status atual.</p>
+          )}
+
+          <div className="actions mt-md">
+            <button type="button" className="secondary" onClick={fechar}>
+              Fechar
+            </button>
+          </div>
         </section>
       )}
-    </main>
+    </>
   );
 }

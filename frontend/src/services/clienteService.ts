@@ -1,5 +1,5 @@
 import { api } from "./api";
-import type { Cliente } from "../types";
+import type { Cliente } from "../types/types";
 
 export const buscarMeuCadastro = async () =>
   (await api.get<Cliente>("/clientes/me")).data;

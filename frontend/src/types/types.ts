@@ -13,6 +13,7 @@ export interface AuthResponse {
   login: string;
   nome: string;
   perfil: Perfil;
+  tipoAgente?: TipoAgente | null;
 }
 export interface Rendimento {
   id?: number;
@@ -39,6 +40,20 @@ export interface Automovel{
     placa:string
 }
 
-export interface Pedido{
-    id?:number, automovel: Automovel, dataInicio:string, dataFim:string, dataPedido:string, status:StatusPedido, clienteNome?: string
+export interface Avaliacao {
+  observacao: string;
+  parecerPositivo: boolean;
+  data: string;
+  agenteNome: string;
+}
+
+export interface Pedido {
+  id?: number;
+  automovel: Automovel;
+  dataInicio: string;
+  dataFim: string;
+  dataPedido: string;
+  status: StatusPedido;
+  clienteNome?: string;
+  avaliacao?: Avaliacao | null;
 }

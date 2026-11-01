@@ -2,6 +2,7 @@ import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 
 import Navbar from "./components/Navbar";
 import PrivateRoute from "./routes/PrivateRoute";
+import PublicRoute from "./routes/PublicRoute";
 
 import Login from "./pages/Login";
 import Cadastro from "./pages/Cadastro";
@@ -13,55 +14,74 @@ import PedidosRecebidos from "./pages/PedidosRecebidos";
 
 export default function App() {
   return (
-    <div>
-      <BrowserRouter>
+    <BrowserRouter>
+      <div className="app">
         <Navbar />
-        <Routes>
-          <Route path="/login" element={<Login />} />
-          <Route path="/cadastro" element={<Cadastro />} />
-          <Route
-            path="/meu-cadastro"
-            element={
-              <PrivateRoute perfil="CLIENTE">
-                <MeuCadastro />
-              </PrivateRoute>
-            }
-          />
-          <Route
-            path="/pedidos"
-            element={
-              <PrivateRoute perfil="CLIENTE">
-                <MeusPedidos />
-              </PrivateRoute>
-            }
-          />
-          <Route
-            path="/pedidos/novo"
-            element={
-              <PrivateRoute perfil="CLIENTE">
-                <NovoPedido />
-              </PrivateRoute>
-            }
-          />
-          <Route
-            path="/pedidos/:id"
-            element={
-              <PrivateRoute perfil="CLIENTE">
-                <DetalhePedido />
-              </PrivateRoute>
-            }
-          />
-          <Route
-            path="/agente/pedidos"
-            element={
-              <PrivateRoute perfil="AGENTE">
-                <PedidosRecebidos />
-              </PrivateRoute>
-            }
-          />
-          <Route path="*" element={<Navigate to="/login" />} />
-        </Routes>
-      </BrowserRouter>
-    </div>
+
+        <main className="shell">
+          <Routes>
+            <Route
+              path="/login"
+              element={
+                <PublicRoute>
+                  <Login />
+                </PublicRoute>
+              }
+            />
+            <Route
+              path="/cadastro"
+              element={
+                <PublicRoute>
+                  <Cadastro />
+                </PublicRoute>
+              }
+            />
+            <Route
+              path="/meu-cadastro"
+              element={
+                <PrivateRoute perfil="CLIENTE">
+                  <MeuCadastro />
+                </PrivateRoute>
+              }
+            />
+            <Route
+              path="/pedidos"
+              element={
+                <PrivateRoute perfil="CLIENTE">
+                  <MeusPedidos />
+                </PrivateRoute>
+              }
+            />
+            <Route
+              path="/pedidos/novo"
+              element={
+                <PrivateRoute perfil="CLIENTE">
+                  <NovoPedido />
+                </PrivateRoute>
+              }
+            />
+            <Route
+              path="/pedidos/:id"
+              element={
+                <PrivateRoute perfil="CLIENTE">
+                  <DetalhePedido />
+                </PrivateRoute>
+              }
+            />
+            <Route
+              path="/agente/pedidos"
+              element={
+                <PrivateRoute perfil="AGENTE">
+                  <PedidosRecebidos />
+                </PrivateRoute>
+              }
+            />
+            <Route path="*" element={<Navigate to="/login" />} />
+          </Routes>
+        </main>
+
+        <footer>Deu Partida · Laboratório 02 · DIAW · PUC Minas</footer>
+      </div>
+    </BrowserRouter>
   );
 }

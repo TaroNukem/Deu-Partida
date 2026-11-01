@@ -1,12 +1,8 @@
-import { useEffect, useState, type FormEvent } from "react";
+import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import {
-  buscarMeuCadastro,
-  atualizarCadastro,
-  excluirConta,
-} from "../services/clienteService";
+import { buscarMeuCadastro, atualizarCadastro, excluirConta } from "../services/clienteService";
 import { useAuth } from "../context/AuthContext";
-import type { Cliente } from "../types";
+import type { Cliente, Rendimento } from "../types/types";
 
 export default function MeuCadastro() {
   const { logout } = useAuth();
@@ -15,6 +11,7 @@ export default function MeuCadastro() {
   const [cliente, setCliente] = useState<Cliente | null>(null);
   const [erro, setErro] = useState<string | null>(null);
   const [mensagem, setMensagem] = useState<string | null>(null);
+  const [sucesso, setSucesso] = useState(false);
   const [salvando, setSalvando] = useState(false);
 
   useEffect(() => {
@@ -33,10 +30,10 @@ export default function MeuCadastro() {
     };
   }, []);
 
-  if (erro) return <p role="alert">{erro}</p>;
-  if (!cliente) return <p>Carregando...</p>;
+  if (erro) return <section className="card"><p className="error">{erro}</p></section>;
+  if (!cliente) return <section className="card"><p>Carregando...</p></section>;
 
-  const rendimentos = cliente.rendimentos ?? [];
+  const rendimentos: Rendimento[] = cliente.rendimentos ?? [];
 
   function adicionarRendimento() {
     setCliente({
@@ -48,7 +45,7 @@ export default function MeuCadastro() {
   function removerRendimento(index: number) {
     setCliente({
       ...cliente!,
-      rendimentos: rendimentos.filter((_, i) => i !== index),
+      rendimentos: rendimentos.filter((_: Rendimento, i: number) => i !== index),
     });
   }
 
@@ -59,7 +56,7 @@ export default function MeuCadastro() {
   ) {
     setCliente({
       ...cliente!,
-      rendimentos: rendimentos.map((r, i) =>
+      rendimentos: rendimentos.map((r: Rendimento, i: number) =>
         i === index
           ? { ...r, [campo]: campo === "valor" ? Number(valor) || 0 : valor }
           : r
@@ -67,15 +64,17 @@ export default function MeuCadastro() {
     });
   }
 
-  async function handleSubmit(event: FormEvent<HTMLFormElement>) {
+  async function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
     setMensagem(null);
+    setSucesso(false);
     setSalvando(true);
 
     try {
       const atualizado = await atualizarCadastro(cliente!);
       setCliente(atualizado);
-      setMensagem("Salvo com sucesso!");
+      setMensagem("Dados salvos com sucesso!");
+      setSucesso(true);
     } catch (err: any) {
       setMensagem(err.response?.data?.mensagem ?? "Erro ao salvar o cadastro");
     } finally {
@@ -99,91 +98,116 @@ export default function MeuCadastro() {
   }
 
   return (
-    <main>
-      <h1>Meu cadastro</h1>
+    <>
+      <section className="welcome">
+        <div>
+          <p className="eyebrow">MEU PERFIL</p>
+          <h1>Meu cadastro</h1>
+          <p>Mantenha seus dados e rendimentos atualizados.</p>
+        </div>
+      </section>
 
       <form onSubmit={handleSubmit}>
-        <label htmlFor="nome">Nome</label>
-        <input
-          id="nome"
-          value={cliente.nome ?? ""}
-          onChange={(e) => setCliente({ ...cliente, nome: e.target.value })}
-        />
+        <section className="card">
+          <h2>Dados pessoais</h2>
+          <div className="form-grid">
+            <label>
+              Nome
+              <input
+                value={cliente.nome ?? ""}
+                onChange={(e) => setCliente({ ...cliente, nome: e.target.value })}
+              />
+            </label>
+            <label>
+              RG
+              <input
+                value={cliente.rg ?? ""}
+                onChange={(e) => setCliente({ ...cliente, rg: e.target.value })}
+              />
+            </label>
+            <label>
+              CPF
+              <input
+                value={cliente.cpf ?? ""}
+                onChange={(e) => setCliente({ ...cliente, cpf: e.target.value })}
+              />
+            </label>
+            <label>
+              Endereço
+              <input
+                value={cliente.endereco ?? ""}
+                onChange={(e) => setCliente({ ...cliente, endereco: e.target.value })}
+              />
+            </label>
+            <label>
+              Profissão
+              <input
+                value={cliente.profissao ?? ""}
+                onChange={(e) => setCliente({ ...cliente, profissao: e.target.value })}
+              />
+            </label>
+          </div>
+        </section>
 
-        <label htmlFor="rg">RG</label>
-        <input
-          id="rg"
-          value={cliente.rg ?? ""}
-          onChange={(e) => setCliente({ ...cliente, rg: e.target.value })}
-        />
+        <section className="card">
+          <h2>Rendimentos</h2>
 
-        <label htmlFor="cpf">CPF</label>
-        <input
-          id="cpf"
-          value={cliente.cpf ?? ""}
-          onChange={(e) => setCliente({ ...cliente, cpf: e.target.value })}
-        />
+          {rendimentos.map((rendimento: Rendimento, index: number) => (
+            <div className="form-grid employment" key={rendimento.id ?? index}>
+              <label>
+                Empregador
+                <input
+                  value={rendimento.entidadeEmpregadora}
+                  onChange={(e) =>
+                    atualizarRendimento(index, "entidadeEmpregadora", e.target.value)
+                  }
+                />
+              </label>
+              <label>
+                Renda mensal (R$)
+                <input
+                  type="number"
+                  value={rendimento.valor}
+                  onChange={(e) => atualizarRendimento(index, "valor", e.target.value)}
+                />
+              </label>
+              <button type="button" className="danger" onClick={() => removerRendimento(index)}>
+                Remover
+              </button>
+            </div>
+          ))}
 
-        <label htmlFor="endereco">Endereço</label>
-        <input
-          id="endereco"
-          value={cliente.endereco ?? ""}
-          onChange={(e) => setCliente({ ...cliente, endereco: e.target.value })}
-        />
+          {rendimentos.length >= 3 && (
+            <p className="subtext">Máximo de 3 rendimentos</p>
+          )}
 
-        <label htmlFor="profissao">Profissão</label>
-        <input
-          id="profissao"
-          value={cliente.profissao ?? ""}
-          onChange={(e) => setCliente({ ...cliente, profissao: e.target.value })}
-        />
+          <button
+            type="button"
+            className="secondary"
+            onClick={adicionarRendimento}
+            disabled={rendimentos.length >= 3}
+          >
+            Adicionar rendimento
+          </button>
+        </section>
 
-        <h2>Rendimentos</h2>
-
-        {rendimentos.map((rendimento, index) => (
-          <div key={rendimento.id ?? index}>
-            <input
-              placeholder="Entidade empregadora"
-              value={rendimento.entidadeEmpregadora}
-              onChange={(e) =>
-                atualizarRendimento(index, "entidadeEmpregadora", e.target.value)
-              }
-            />
-            <input
-              type="number"
-              placeholder="Valor"
-              value={rendimento.valor}
-              onChange={(e) =>
-                atualizarRendimento(index, "valor", e.target.value)
-              }
-            />
-            <button type="button" onClick={() => removerRendimento(index)}>
-              Remover
+        <section className="card">
+          <div className="form-actions">
+            <button type="submit" disabled={salvando}>
+              {salvando ? "Salvando..." : "Salvar alterações"}
+            </button>
+            <button type="button" className="danger" onClick={handleExcluir}>
+              Excluir conta
             </button>
           </div>
-        ))}
 
-        {rendimentos.length >= 3 && <p>Máximo de 3 rendimentos</p>}
-
-        <button
-          type="button"
-          onClick={adicionarRendimento}
-          disabled={rendimentos.length >= 3}
-        >
-          Adicionar rendimento
-        </button>
-
-        <div>
-          <button type="submit" disabled={salvando}>
-            {salvando ? "Salvando..." : "Salvar"}
-          </button>
-          <button type="button" onClick={handleExcluir}>
-            Excluir conta
-          </button>
-        </div>
-
-        {mensagem && <p role="status">{mensagem}</p>}
+          {mensagem && (
+            <p className={sucesso ? "success" : "error"} role="status">
+              {mensagem}
+            </p>
+          )}
+        </section>
       </form>
-    </main>
+    </>
   );
 }

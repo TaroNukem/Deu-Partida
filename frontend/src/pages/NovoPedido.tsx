@@ -11,9 +11,18 @@ export default function NovoPedido() {
   }
 
   return (
-    <main>
-      <h1>Novo pedido</h1>
-      <PedidoForm textoBotao="Criar pedido" onSubmit={handleCriar} />
-    </main>
+    <>
+      <section className="welcome">
+        <div>
+          <p className="eyebrow">NOVO PEDIDO</p>
+          <h1>Solicitar aluguel</h1>
+          <p>Informe o automóvel e o período desejado.</p>
+        </div>
+      </section>
+
+      <section className="card">
+        <PedidoForm textoBotao="Criar pedido" onSubmit={handleCriar} />
+      </section>
+    </>
   );
 }

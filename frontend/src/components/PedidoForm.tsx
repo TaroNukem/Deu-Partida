@@ -58,59 +58,68 @@ export default function PedidoForm({ inicial, textoBotao, onSubmit, onCancelar }
   return (
     <form onSubmit={handleSubmit}>
       <h2>Automóvel</h2>
-
-      <label htmlFor="matricula">Matrícula</label>
-      <input id="matricula" value={matricula} onChange={(e) => setMatricula(e.target.value)} required />
-
-      <label htmlFor="ano">Ano</label>
-      <input
-        id="ano"
-        type="number"
-        value={ano}
-        onChange={(e) => setAno(e.target.value === "" ? "" : Number(e.target.value))}
-        required
-      />
-
-      <label htmlFor="marca">Marca</label>
-      <input id="marca" value={marca} onChange={(e) => setMarca(e.target.value)} required />
-
-      <label htmlFor="modelo">Modelo</label>
-      <input id="modelo" value={modelo} onChange={(e) => setModelo(e.target.value)} required />
-
-      <label htmlFor="placa">Placa</label>
-      <input id="placa" value={placa} onChange={(e) => setPlaca(e.target.value)} required />
+      <div className="form-grid">
+        <label>
+          Matrícula
+          <input value={matricula} onChange={(e) => setMatricula(e.target.value)} required />
+        </label>
+        <label>
+          Ano
+          <input
+            type="number"
+            value={ano}
+            onChange={(e) => setAno(e.target.value === "" ? "" : Number(e.target.value))}
+            required
+          />
+        </label>
+        <label>
+          Marca
+          <input value={marca} onChange={(e) => setMarca(e.target.value)} required />
+        </label>
+        <label>
+          Modelo
+          <input value={modelo} onChange={(e) => setModelo(e.target.value)} required />
+        </label>
+        <label>
+          Placa
+          <input value={placa} onChange={(e) => setPlaca(e.target.value)} required />
+        </label>
+      </div>
 
       <h2>Período</h2>
+      <div className="form-grid">
+        <label>
+          Data de início
+          <input
+            type="date"
+            value={dataInicio}
+            onChange={(e) => setDataInicio(e.target.value)}
+            required
+          />
+        </label>
+        <label>
+          Data de fim
+          <input
+            type="date"
+            value={dataFim}
+            onChange={(e) => setDataFim(e.target.value)}
+            required
+          />
+        </label>
+      </div>
 
-      <label htmlFor="dataInicio">Data de início</label>
-      <input
-        id="dataInicio"
-        type="date"
-        value={dataInicio}
-        onChange={(e) => setDataInicio(e.target.value)}
-        required
-      />
+      {erro && <p className="error">{erro}</p>}
 
-      <label htmlFor="dataFim">Data de fim</label>
-      <input
-        id="dataFim"
-        type="date"
-        value={dataFim}
-        onChange={(e) => setDataFim(e.target.value)}
-        required
-      />
-
-      {erro && <p role="alert">{erro}</p>}
-
-      <button type="submit" disabled={enviando}>
-        {enviando ? "Enviando..." : textoBotao}
-      </button>
-
-      {onCancelar && (
-        <button type="button" onClick={onCancelar}>
-          Cancelar edição
+      <div className="form-actions">
+        <button type="submit" disabled={enviando}>
+          {enviando ? "Enviando..." : textoBotao}
         </button>
-      )}
+        {onCancelar && (
+          <button type="button" className="secondary" onClick={onCancelar}>
+            Cancelar edição
+          </button>
+        )}
+      </div>
     </form>
   );
 }

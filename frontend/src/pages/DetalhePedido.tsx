@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { Link, useParams } from "react-router-dom";
 import { buscarPedido, cancelarPedido, modificarPedido } from "../services/pedidoService";
-import type { Pedido, StatusPedido } from "../types";
+import type { Pedido, StatusPedido } from "../types/types";
 import StatusBadge from "../components/StatusBadge";
 import PedidoForm, { type DadosPedido } from "../components/PedidoForm";
 
@@ -127,6 +127,25 @@ export default function DetalhePedido() {
                 );
               })}
             </ol>
+          )}
+
+          {pedido.avaliacao && (
+            <>
+              <h2>Avaliação financeira</h2>
+              <p>
+                Parecer:{" "}
+                <strong>
+                  {pedido.avaliacao.parecerPositivo ? "Positivo" : "Negativo"}
+                </strong>
+              </p>
+              {pedido.avaliacao.observacao && (
+                <p>Observação: {pedido.avaliacao.observacao}</p>
+              )}
+              <p>
+                Avaliado por {pedido.avaliacao.agenteNome} em{" "}
+                {new Date(pedido.avaliacao.data + "T00:00:00").toLocaleDateString("pt-BR")}
+              </p>
+            </>
           )}
 
           <div>

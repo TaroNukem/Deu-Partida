@@ -1,5 +1,5 @@
 import { api } from "./api";
-import type { Pedido } from "../types";
+import type { Pedido } from "../types/types";
 
 export const listarRecebidos = async () =>
   (await api.get<Pedido[]>("/agente/pedidos")).data;

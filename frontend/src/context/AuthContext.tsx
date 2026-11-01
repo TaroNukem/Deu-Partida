@@ -1,5 +1,5 @@
 import { createContext, useContext, useState, type ReactNode } from "react";
-import type { AuthResponse } from "../types";
+import type { AuthResponse } from "../types/types";
 import * as authService from "../services/authService";
 
 interface AuthContextData {

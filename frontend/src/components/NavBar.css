@@ -1,0 +1,105 @@
+.navbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 0.75rem 1.5rem;
+  background: #1e3a8a;
+  color: #ffffff;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15);
+  position: sticky;
+  top: 0;
+  z-index: 10;
+  font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+}
+
+.navbar__esquerda {
+  display: flex;
+  align-items: center;
+  gap: 2rem;
+}
+
+.navbar__logo {
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: #ffffff;
+  text-decoration: none;
+}
+
+.navbar__links {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.navbar__link {
+  color: #dbeafe;
+  text-decoration: none;
+  padding: 0.4rem 0.75rem;
+  border-radius: 6px;
+  transition: background 0.15s, color 0.15s;
+}
+
+.navbar__link:hover {
+  background: rgba(255, 255, 255, 0.12);
+  color: #ffffff;
+}
+
+.navbar__link--ativo {
+  background: #ffffff;
+  color: #1e3a8a;
+  font-weight: 600;
+}
+
+.navbar__link--ativo:hover {
+  background: #ffffff;
+  color: #1e3a8a;
+}
+
+.navbar__usuario {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.navbar__info {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  line-height: 1.2;
+}
+
+.navbar__nome {
+  font-weight: 600;
+}
+
+.navbar__perfil {
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: #bfdbfe;
+}
+
+.navbar__sair {
+  padding: 0.4rem 0.9rem;
+  border: 1px solid rgba(255, 255, 255, 0.6);
+  border-radius: 6px;
+  background: transparent;
+  color: #ffffff;
+  cursor: pointer;
+  transition: background 0.15s;
+}
+
+.navbar__sair:hover {
+  background: rgba(255, 255, 255, 0.15);
+}
+
+@media (max-width: 720px) {
+  .navbar {
+    flex-wrap: wrap;
+  }
+
+  .navbar__esquerda {
+    flex-wrap: wrap;
+    gap: 0.75rem;
+  }
+}

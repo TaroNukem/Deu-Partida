@@ -1,5 +1,5 @@
 import { api } from "./api"
-import type { AuthResponse } from "../types"
+import type { AuthResponse } from "../types/types"
 
 export async function login(login: string, senha: string): Promise<AuthResponse> {
     const { data } = await api.post<AuthResponse>("/auth/login", { login, senha });

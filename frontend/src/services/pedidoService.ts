@@ -1,5 +1,5 @@
 import { api } from "./api";
-import type { Pedido, StatusPedido } from "../types";
+import type { Pedido, StatusPedido } from "../types/types";
 
 export const listarPedidos = async (status?: StatusPedido) =>(await api.get<Pedido[]>("/pedidos", { params:status ? { status } :{} })).data
 

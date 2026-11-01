@@ -1,38 +1,53 @@
-import { Link, useNavigate } from "react-router-dom";
+import { Link, NavLink, useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 
-export default function NavBar(){
-    const { usuario, logout } = useAuth();
-    const navigate = useNavigate();
+export default function Navbar() {
+  const { usuario, logout } = useAuth();
+  const navigate = useNavigate();
 
-    function handleLogout(){
-        logout() 
-        navigate("/login")
-    }
+  if (!usuario) return null;
 
-    if(!usuario){
-        return null
-    }
+  const ehCliente = usuario.perfil === "CLIENTE";
+  const rotulo = ehCliente
+    ? "Cliente"
+    : usuario.tipoAgente === "BANCO"
+      ? "Banco"
+      : "Empresa";
 
-    return(
-        <nav>
-            <Link to="/">Deu Partida</Link>
+  function sair() {
+    logout();
+    navigate("/login");
+  }
 
-            {usuario.perfil === "CLIENTE" && (
-                <>
-                    <Link to="/cadastro">Meu Cadastro</Link>
-                    <Link to="/pedidos">Meus pedidos</Link>
-                    <Link to="/pedidos/novo">Novo pedido</Link>
-                </>
-            )}
+  return (
+    <header className="topbar">
+      <Link className="brand" to={ehCliente ? "/pedidos" : "/agente/pedidos"}>
+        <span className="brand-icon">DP</span>
+        <span>
+          Deu <span className="accent">Partida</span>
+        </span>
+      </Link>
 
-            {usuario.perfil == "AGENTE" && (
-                <Link to="/agente/pedidos">Pedidos recebidos</Link>
-            )}
+      <nav>
+        {ehCliente ? (
+          <>
+            <NavLink to="/pedidos" end>Meus pedidos</NavLink>
+            <NavLink to="/pedidos/novo">Novo pedido</NavLink>
+            <NavLink to="/meu-cadastro">Meu cadastro</NavLink>
+          </>
+        ) : (
+          <NavLink to="/agente/pedidos">Pedidos recebidos</NavLink>
+        )}
 
-            <button onClick={handleLogout}>
-                Sair
-            </button>
-        </nav>
-    )
+        <span className="user-chip">
+          <strong>{usuario.nome}</strong>
+          <span className="role">{rotulo}</span>
+        </span>
+
+        <button type="button" className="secondary logout" onClick={sair}>
+          Sair
+        </button>
+      </nav>
+    </header>
+  );
 }
