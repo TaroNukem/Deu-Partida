@@ -1,8 +1,17 @@
 import { useEffect, useState, type FormEvent } from "react";
-import { buscarMeuCadastro, atualizarCadastro } from "../services/clienteService";
+import { useNavigate } from "react-router-dom";
+import {
+  buscarMeuCadastro,
+  atualizarCadastro,
+  excluirConta,
+} from "../services/clienteService";
+import { useAuth } from "../context/AuthContext";
 import type { Cliente } from "../types";
 
 export default function MeuCadastro() {
+  const { logout } = useAuth();
+  const navigate = useNavigate();
+
   const [cliente, setCliente] = useState<Cliente | null>(null);
   const [erro, setErro] = useState<string | null>(null);
   const [mensagem, setMensagem] = useState<string | null>(null);
@@ -52,7 +61,7 @@ export default function MeuCadastro() {
       ...cliente!,
       rendimentos: rendimentos.map((r, i) =>
         i === index
-          ? { ...r, [campo]: campo === "valor" ? Number(valor) : valor }
+          ? { ...r, [campo]: campo === "valor" ? Number(valor) || 0 : valor }
           : r
       ),
     });
@@ -68,11 +77,24 @@ export default function MeuCadastro() {
       setCliente(atualizado);
       setMensagem("Salvo com sucesso!");
     } catch (err: any) {
-      setMensagem(
-        err.response?.data?.mensagem ?? "Erro ao salvar o cadastro"
-      );
+      setMensagem(err.response?.data?.mensagem ?? "Erro ao salvar o cadastro");
     } finally {
       setSalvando(false);
+    }
+  }
+
+  async function handleExcluir() {
+    const confirmado = window.confirm(
+      "Tem certeza que deseja excluir sua conta? Essa ação não pode ser desfeita."
+    );
+    if (!confirmado) return;
+
+    try {
+      await excluirConta();
+      logout();
+      navigate("/login");
+    } catch (err: any) {
+      setMensagem(err.response?.data?.mensagem ?? "Erro ao excluir a conta");
     }
   }
 
@@ -154,6 +176,9 @@ export default function MeuCadastro() {
         <div>
           <button type="submit" disabled={salvando}>
             {salvando ? "Salvando..." : "Salvar"}
+          </button>
+          <button type="button" onClick={handleExcluir}>
+            Excluir conta
           </button>
         </div>
 
