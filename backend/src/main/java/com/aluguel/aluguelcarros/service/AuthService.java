@@ -7,11 +7,13 @@ import com.aluguel.aluguelcarros.exception.RegraNegocioException;
 import com.aluguel.aluguelcarros.model.Agente;
 import com.aluguel.aluguelcarros.model.Cliente;
 import com.aluguel.aluguelcarros.model.Perfil;
+import com.aluguel.aluguelcarros.model.TipoAgente;
 import com.aluguel.aluguelcarros.model.Usuario;
 import com.aluguel.aluguelcarros.repository.AgenteRepository;
 import com.aluguel.aluguelcarros.repository.ClienteRepository;
 import com.aluguel.aluguelcarros.repository.UsuarioRepository;
 import com.aluguel.aluguelcarros.security.JwtService;
+import com.aluguel.aluguelcarros.util.CpfValidator;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -30,6 +32,11 @@ public class AuthService {
 
     @Transactional
     public AuthResponse register(RegisterRequest req) {
+        // RN02: senha com no mínimo 8 caracteres
+        if (req.senha() == null || req.senha().length() < 8) {
+            throw new RegraNegocioException("A senha deve ter no mínimo 8 caracteres");
+        }
+
         if (usuarioRepository.existsByLogin(req.login())) {
             throw new RegraNegocioException("Login já existe");
         }
@@ -40,12 +47,19 @@ public class AuthService {
             if (vazio(req.cpf()) || vazio(req.rg())) {
                 throw new RegraNegocioException("CPF e RG são obrigatórios para cliente");
             }
-            if (clienteRepository.existsByCpf(req.cpf())) {
+
+            // RN03: CPF válido e único
+            if (!CpfValidator.valido(req.cpf())) {
+                throw new RegraNegocioException("CPF inválido");
+            }
+            String cpf = CpfValidator.normalizar(req.cpf());
+            if (clienteRepository.existsByCpf(cpf)) {
                 throw new RegraNegocioException("CPF já cadastrado");
             }
+
             Cliente cliente = new Cliente();
             cliente.setNome(req.nome());
-            cliente.setCpf(req.cpf());
+            cliente.setCpf(cpf);
             cliente.setRg(req.rg());
             cliente.setEndereco(req.endereco());
             cliente.setProfissao(req.profissao());
@@ -63,7 +77,14 @@ public class AuthService {
         }
 
         String token = jwtService.gerarToken(salvo);
-        return new AuthResponse(token, salvo.getId(), salvo.getLogin(), req.nome(), salvo.getPerfil());
+        return new AuthResponse(
+                token,
+                salvo.getId(),
+                salvo.getLogin(),
+                req.nome(),
+                salvo.getPerfil(),
+                tipoDe(salvo)
+        );
     }
 
     @Transactional(readOnly = true)
@@ -76,7 +97,14 @@ public class AuthService {
         }
 
         String token = jwtService.gerarToken(u);
-        return new AuthResponse(token, u.getId(), u.getLogin(), nomeDe(u), u.getPerfil());
+        return new AuthResponse(
+                token,
+                u.getId(),
+                u.getLogin(),
+                nomeDe(u),
+                u.getPerfil(),
+                tipoDe(u)
+        );
     }
 
     private void preencherUsuario(Usuario u, RegisterRequest req) {
@@ -89,6 +117,12 @@ public class AuthService {
         if (u instanceof Cliente c) return c.getNome();
         if (u instanceof Agente a) return a.getNome();
         return u.getLogin();
+    }
+
+    // Só agentes têm tipo (EMPRESA ou BANCO); para clientes retorna null
+    private TipoAgente tipoDe(Usuario u) {
+        if (u instanceof Agente a) return a.getTipo();
+        return null;
     }
 
     private boolean vazio(String s) {

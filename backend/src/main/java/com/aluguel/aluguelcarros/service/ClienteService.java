@@ -5,10 +5,13 @@ import com.aluguel.aluguelcarros.dto.ClienteResponse;
 import com.aluguel.aluguelcarros.dto.RendimentoDTO;
 import com.aluguel.aluguelcarros.exception.RegraNegocioException;
 import com.aluguel.aluguelcarros.model.Cliente;
+import com.aluguel.aluguelcarros.model.PedidoAluguel;
 import com.aluguel.aluguelcarros.model.Rendimento;
+import com.aluguel.aluguelcarros.model.StatusPedido;
 import com.aluguel.aluguelcarros.repository.ClienteRepository;
 import com.aluguel.aluguelcarros.repository.PedidoAluguelRepository;
 import com.aluguel.aluguelcarros.security.UsuarioLogado;
+import com.aluguel.aluguelcarros.util.CpfValidator;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -34,18 +37,26 @@ public class ClienteService {
     public ClienteResponse atualizar(ClienteRequest req) {
         Cliente c = clienteLogado();
 
+        // RN04: no máximo 3 empregadores
         if (req.rendimentos() != null && req.rendimentos().size() > 3) {
             throw new RegraNegocioException("O cliente pode ter no máximo 3 rendimentos");
         }
 
-        if (!c.getCpf().equals(req.cpf())
-                && clienteRepository.existsByCpfAndIdNot(req.cpf(), c.getId())) {
+        // RN03: CPF válido e único entre clientes
+        String cpf = CpfValidator.normalizar(req.cpf());
+
+        if (!CpfValidator.valido(cpf)) {
+            throw new RegraNegocioException("CPF inválido");
+        }
+
+        if (!c.getCpf().equals(cpf)
+                && clienteRepository.existsByCpfAndIdNot(cpf, c.getId())) {
             throw new RegraNegocioException("CPF já cadastrado em outro cliente");
         }
 
         c.setNome(req.nome());
         c.setRg(req.rg());
-        c.setCpf(req.cpf());
+        c.setCpf(cpf);
         c.setEndereco(req.endereco());
         c.setProfissao(req.profissao());
 
@@ -64,13 +75,20 @@ public class ClienteService {
     }
 
     // 5.5 - excluir
+    // RN12: não pode excluir conta com pedido em andamento
     @Transactional
     public void excluir() {
         Cliente c = clienteLogado();
 
-        if (!pedidoAluguelRepository.findByClienteId(c.getId()).isEmpty()) {
+        boolean temEmAndamento = pedidoAluguelRepository.findByClienteId(c.getId()).stream()
+                .map(PedidoAluguel::getStatus)
+                .anyMatch(s -> s == StatusPedido.EM_ANALISE
+                        || s == StatusPedido.APROVADO
+                        || s == StatusPedido.CONTRATADO);
+
+        if (temEmAndamento) {
             throw new RegraNegocioException(
-                    "Não é possível excluir a conta: existem pedidos de aluguel vinculados");
+                    "Não é possível excluir a conta: existem pedidos em andamento");
         }
 
         clienteRepository.delete(c);

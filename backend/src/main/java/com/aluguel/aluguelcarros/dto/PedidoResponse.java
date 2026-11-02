@@ -12,6 +12,22 @@ public record PedidoResponse(
         LocalDate dataPedido,
         StatusPedido status,
         String clienteNome,
-        AvaliacaoResponse avaliacao
+        AvaliacaoResponse avaliacao,
+        ClienteResumoDTO cliente
 ) {
+
+    // Mantém a assinatura antiga, para quem não precisa dos dados do cliente
+    public PedidoResponse(
+            Long id,
+            AutomovelDTO automovel,
+            LocalDate dataInicio,
+            LocalDate dataFim,
+            LocalDate dataPedido,
+            StatusPedido status,
+            String clienteNome,
+            AvaliacaoResponse avaliacao
+    ) {
+        this(id, automovel, dataInicio, dataFim, dataPedido, status,
+                clienteNome, avaliacao, null);
+    }
 }

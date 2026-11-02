@@ -1,4 +1,3 @@
-
 package com.aluguel.aluguelcarros.service;
 
 import com.aluguel.aluguelcarros.dto.*;
@@ -23,6 +22,7 @@ public class AgenteService {
     private final ContratoAluguelRepository contratoAluguelRepository;
 
     // 7.1 - listar todos os pedidos recebidos pelo agente
+    @Transactional(readOnly = true)
     public List<PedidoResponse> listarPedidos() {
         return pedidoRepository.findAll()
                 .stream()
@@ -92,8 +92,7 @@ public class AgenteService {
         avaliacaoRepository.save(avaliacao);
     }
 
-    // Converte a entidade para DTO de resposta
-    // Converte a entidade para DTO de resposta
+    // Converte a entidade para DTO de resposta, com os dados do cliente
     private PedidoResponse paraResponse(PedidoAluguel p) {
         Automovel a = p.getAutomovel();
 
@@ -116,6 +115,20 @@ public class AgenteService {
                 ))
                 .orElse(null);
 
+        Cliente c = p.getCliente();
+
+        List<RendimentoDTO> rendimentos = c.getRendimentos().stream()
+                .map(r -> new RendimentoDTO(r.getId(), r.getEntidadeEmpregadora(), r.getValor()))
+                .toList();
+
+        ClienteResumoDTO clienteDto = new ClienteResumoDTO(
+                c.getId(),
+                c.getNome(),
+                c.getCpf(),
+                c.getProfissao(),
+                rendimentos
+        );
+
         return new PedidoResponse(
                 p.getId(),
                 autoDto,
@@ -123,8 +136,9 @@ public class AgenteService {
                 p.getDataFim(),
                 p.getDataPedido(),
                 p.getStatus(),
-                p.getCliente().getNome(),
-                avaliacao
+                c.getNome(),
+                avaliacao,
+                clienteDto
         );
     }
 
@@ -246,7 +260,6 @@ public class AgenteService {
         );
     }
 
-    // 7.5 - executar contrato de pedido aprovado
     // 7.5 - executar contrato de pedido aprovado
     @Transactional
     public ContratoAluguelResponse executarContrato(Long pedidoId) {

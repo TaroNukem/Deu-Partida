@@ -1,4 +1,12 @@
 package com.aluguel.aluguelcarros.dto;
 
-public class ClienteResumoDTO {
+import java.util.List;
+
+public record ClienteResumoDTO(
+        Long id,
+        String nome,
+        String cpf,
+        String profissao,
+        List<RendimentoDTO> rendimentos
+) {
 }

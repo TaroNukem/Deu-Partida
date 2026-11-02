@@ -2,6 +2,7 @@ package com.aluguel.aluguelcarros.service;
 
 import com.aluguel.aluguelcarros.dto.AutomovelDTO;
 import com.aluguel.aluguelcarros.dto.AvaliacaoResponse;
+import com.aluguel.aluguelcarros.dto.ContratoCreditoResponse;
 import com.aluguel.aluguelcarros.dto.PedidoRequest;
 import com.aluguel.aluguelcarros.dto.PedidoResponse;
 import com.aluguel.aluguelcarros.exception.RegraNegocioException;
@@ -11,22 +12,30 @@ import com.aluguel.aluguelcarros.model.Cliente;
 import com.aluguel.aluguelcarros.model.PedidoAluguel;
 import com.aluguel.aluguelcarros.model.StatusPedido;
 import com.aluguel.aluguelcarros.model.TipoAgente;
-import com.aluguel.aluguelcarros.repository.*;
+import com.aluguel.aluguelcarros.repository.AgenteRepository;
+import com.aluguel.aluguelcarros.repository.AutomovelRepository;
+import com.aluguel.aluguelcarros.repository.AvaliacaoFinanceiraRepository;
+import com.aluguel.aluguelcarros.repository.ClienteRepository;
+import com.aluguel.aluguelcarros.repository.ContratoCreditoRepository;
+import com.aluguel.aluguelcarros.repository.PedidoAluguelRepository;
 import com.aluguel.aluguelcarros.security.UsuarioLogado;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import com.aluguel.aluguelcarros.dto.ContratoCreditoResponse;
-import java.util.Optional;
 
 import java.time.LocalDate;
 import java.util.List;
+import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
 public class PedidoService {
+
+    // RN15: pedidos ativos que reservam o automóvel no período
+    private static final List<StatusPedido> STATUS_QUE_RESERVAM =
+            List.of(StatusPedido.EM_ANALISE, StatusPedido.APROVADO, StatusPedido.CONTRATADO);
 
     private final PedidoAluguelRepository pedidoRepository;
     private final AutomovelRepository automovelRepository;
@@ -36,6 +45,7 @@ public class PedidoService {
     private final AvaliacaoFinanceiraRepository avaliacaoRepository;
     private final ContratoCreditoRepository contratoCreditoRepository;
 
+    // 6.7 - crédito concedido ao pedido (somente do dono)
     public Optional<ContratoCreditoResponse> buscarCreditoMeu(Long id) {
         Cliente cliente = clienteLogado();
 
@@ -66,7 +76,13 @@ public class PedidoService {
 
         validarDatas(req.dataInicio(), req.dataFim());
 
+        // RN05: dados de identificação completos
+        validarDadosIdentificacao(cliente);
+
         Automovel automovel = obterOuCriarAutomovel(req.automovel(), cliente);
+
+        // RN15: o automóvel não pode ter outro pedido ativo no mesmo período
+        validarSobreposicao(automovel.getId(), req.dataInicio(), req.dataFim(), null);
 
         PedidoAluguel pedido = new PedidoAluguel();
         pedido.setCliente(cliente);
@@ -142,6 +158,12 @@ public class PedidoService {
         Automovel automovel = pedido.getAutomovel();
         AutomovelDTO dto = req.automovel();
 
+        // RN15: ignora o próprio pedido ao checar sobreposição
+        validarSobreposicao(automovel.getId(), req.dataInicio(), req.dataFim(), pedido.getId());
+
+        // RN11: placa e matrícula não podem pertencer a outro automóvel
+        validarUnicidadeAoAtualizar(automovel, dto);
+
         automovel.setMatricula(dto.matricula());
         automovel.setAno(dto.ano());
         automovel.setMarca(dto.marca());
@@ -203,6 +225,26 @@ public class PedidoService {
         }
     }
 
+    // RN05: o cliente precisa ter os dados de identificação preenchidos
+    private void validarDadosIdentificacao(Cliente c) {
+        if (vazio(c.getNome()) || vazio(c.getRg())
+                || vazio(c.getCpf()) || vazio(c.getEndereco())) {
+            throw new RegraNegocioException(
+                    "Complete seus dados de cliente (nome, RG, CPF e endereço) antes de criar um pedido");
+        }
+    }
+
+    // RN15: impede dois pedidos ativos do mesmo automóvel com datas que se sobrepõem
+    private void validarSobreposicao(Long automovelId, LocalDate inicio, LocalDate fim, Long excluirPedidoId) {
+        boolean sobrepoe = pedidoRepository.existeSobreposicao(
+                automovelId, STATUS_QUE_RESERVAM, inicio, fim, excluirPedidoId);
+
+        if (sobrepoe) {
+            throw new RegraNegocioException(
+                    "Este automóvel já está reservado em um período que se sobrepõe às datas informadas");
+        }
+    }
+
     // Busca e valida o banco de crédito
     private Agente buscarBanco(Long bancoId) {
         Agente banco = agenteRepository.findById(bancoId)
@@ -217,19 +259,56 @@ public class PedidoService {
         return banco;
     }
 
-    // Busca um automóvel pela placa ou cria um novo
+    // RN11: matrícula e placa são únicas. Reutiliza o automóvel só se os dados baterem.
     private Automovel obterOuCriarAutomovel(AutomovelDTO dto, Cliente cliente) {
-        return automovelRepository.findByPlaca(dto.placa())
-                .orElseGet(() -> {
-                    Automovel a = new Automovel();
-                    a.setMatricula(dto.matricula());
-                    a.setAno(dto.ano());
-                    a.setMarca(dto.marca());
-                    a.setModelo(dto.modelo());
-                    a.setPlaca(dto.placa());
-                    a.setProprietario(cliente);
+        Optional<Automovel> porPlaca = automovelRepository.findByPlaca(dto.placa());
+        Optional<Automovel> porMatricula = automovelRepository.findByMatricula(dto.matricula());
 
-                    return automovelRepository.save(a);
+        if (porPlaca.isPresent() && porMatricula.isPresent()
+                && !porPlaca.get().getId().equals(porMatricula.get().getId())) {
+            throw new RegraNegocioException(
+                    "Matrícula e placa pertencem a automóveis diferentes");
+        }
+
+        if (porPlaca.isPresent()) {
+            Automovel existente = porPlaca.get();
+            if (!existente.getMatricula().equals(dto.matricula())) {
+                throw new RegraNegocioException(
+                        "Esta placa já está cadastrada com outra matrícula");
+            }
+            return existente;
+        }
+
+        if (porMatricula.isPresent()) {
+            throw new RegraNegocioException(
+                    "Esta matrícula já está cadastrada com outra placa");
+        }
+
+        Automovel a = new Automovel();
+        a.setMatricula(dto.matricula());
+        a.setAno(dto.ano());
+        a.setMarca(dto.marca());
+        a.setModelo(dto.modelo());
+        a.setPlaca(dto.placa());
+        a.setProprietario(cliente);
+
+        return automovelRepository.save(a);
+    }
+
+    // RN11 na modificação: a nova placa ou matrícula não pode pertencer a outro automóvel
+    private void validarUnicidadeAoAtualizar(Automovel atual, AutomovelDTO dto) {
+        automovelRepository.findByPlaca(dto.placa())
+                .filter(a -> !a.getId().equals(atual.getId()))
+                .ifPresent(a -> {
+                    throw new RegraNegocioException(
+                            "Esta placa já pertence a outro automóvel");
+                });
+
+        automovelRepository.findByMatricula(dto.matricula())
+                .filter(a -> !a.getId().equals(atual.getId()))
+                .ifPresent(a -> {
+                    throw new RegraNegocioException(
+                            "Esta matrícula já pertence a outro automóvel");
                 });
     }
 
@@ -266,5 +345,9 @@ public class PedidoService {
                 p.getCliente().getNome(),
                 avaliacao
         );
+    }
+
+    private boolean vazio(String s) {
+        return s == null || s.isBlank();
     }
 }
