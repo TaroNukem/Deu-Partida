@@ -1,5 +1,6 @@
 import { Link, NavLink, useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
+import foto from "../assets/Logo.png"
 
 export default function Navbar() {
   const { usuario, logout } = useAuth();
@@ -22,16 +23,19 @@ export default function Navbar() {
   return (
     <header className="topbar">
       <Link className="brand" to={ehCliente ? "/pedidos" : "/agente/pedidos"}>
-        <span className="brand-icon">DP</span>
-        <span>
-          Deu <span className="accent">Partida</span>
-        </span>
+        <img
+          src={foto}
+          alt="Deu Partida"
+          className="brand-logo"
+        />
       </Link>
 
       <nav>
         {ehCliente ? (
           <>
-            <NavLink to="/pedidos" end>Meus pedidos</NavLink>
+            <NavLink to="/pedidos" end>
+              Meus pedidos
+            </NavLink>
             <NavLink to="/pedidos/novo">Novo pedido</NavLink>
             <NavLink to="/meu-cadastro">Meu cadastro</NavLink>
           </>

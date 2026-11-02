@@ -3,6 +3,9 @@ import { useNavigate } from "react-router-dom";
 import { listarPedidos } from "../services/pedidoService";
 import type { Pedido, StatusPedido } from "../types/types";
 import StatusBadge, { rotulosStatus } from "../components/StatusBadge";
+import BarraBusca from "../components/BarraBusca";
+import { filtrarPedidos } from "../utils/filtrarPedidos";
+import { formatarPeriodo } from "../utils/formatar";
 
 const STATUS_OPCOES = Object.keys(rotulosStatus) as StatusPedido[];
 
@@ -12,6 +15,7 @@ export default function MeusPedidos() {
   const [carregando, setCarregando] = useState(true);
   const [erro, setErro] = useState<string | null>(null);
   const [filtro, setFiltro] = useState<StatusPedido | "">("");
+  const [busca, setBusca] = useState("");
 
   useEffect(() => {
     let ativo = true;
@@ -24,6 +28,9 @@ export default function MeusPedidos() {
 
     return () => { ativo = false; };
   }, [filtro]);
+
+  // O status já veio filtrado do back; aqui só aplica a busca
+  const visiveis = filtrarPedidos(pedidos, busca, "");
 
   return (
     <>
@@ -38,7 +45,7 @@ export default function MeusPedidos() {
       {erro && <p className="error notice">{erro}</p>}
 
       <section className="card">
-        <div className="form-grid" style={{ maxWidth: 360, marginBottom: 0 }}>
+        <div className="form-grid">
           <label>
             Filtrar por status
             <select
@@ -51,6 +58,8 @@ export default function MeusPedidos() {
               ))}
             </select>
           </label>
+
+          <BarraBusca valor={busca} onChange={setBusca} />
         </div>
       </section>
 
@@ -61,6 +70,8 @@ export default function MeusPedidos() {
           <p>Carregando...</p>
         ) : pedidos.length === 0 ? (
           <p>Nenhum pedido encontrado.</p>
+        ) : visiveis.length === 0 ? (
+          <p>Nenhum pedido encontrado com esses filtros.</p>
         ) : (
           <div className="table-wrap">
             <table>
@@ -69,18 +80,20 @@ export default function MeusPedidos() {
                   <th>Pedido</th>
                   <th>Automóvel</th>
                   <th>Placa</th>
+                  <th>Matrícula</th>
                   <th>Período</th>
                   <th>Status</th>
                   <th></th>
                 </tr>
               </thead>
               <tbody>
-                {pedidos.map((pedido) => (
+                {visiveis.map((pedido) => (
                   <tr key={pedido.id}>
                     <td>#{pedido.id}</td>
                     <td>{pedido.automovel.marca} {pedido.automovel.modelo}</td>
                     <td>{pedido.automovel.placa}</td>
-                    <td>{pedido.dataInicio} até {pedido.dataFim}</td>
+                    <td>{pedido.automovel.matricula}</td>
+                    <td>{formatarPeriodo(pedido.dataInicio, pedido.dataFim)}</td>
                     <td>
                       <StatusBadge status={pedido.status} />
                     </td>

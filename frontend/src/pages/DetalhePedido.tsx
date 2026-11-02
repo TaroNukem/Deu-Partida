@@ -1,9 +1,15 @@
 import { useEffect, useState } from "react";
 import { Link, useParams } from "react-router-dom";
-import { buscarPedido, cancelarPedido, modificarPedido } from "../services/pedidoService";
-import type { Pedido, StatusPedido } from "../types/types";
+import {
+  buscarPedido,
+  buscarCredito,
+  cancelarPedido,
+  modificarPedido,
+} from "../services/pedidoService";
+import type { ContratoCredito, Pedido, StatusPedido } from "../types/types";
 import StatusBadge from "../components/StatusBadge";
 import PedidoForm, { type DadosPedido } from "../components/PedidoForm";
+import { formatarData, formatarPeriodo } from "../utils/formatar";
 
 const ETAPAS: StatusPedido[] = ["EM_ANALISE", "APROVADO", "CONTRATADO"];
 
@@ -20,6 +26,7 @@ export default function DetalhePedido() {
   const pedidoId = Number(id);
 
   const [pedido, setPedido] = useState<Pedido | null>(null);
+  const [credito, setCredito] = useState<ContratoCredito | null>(null);
   const [erro, setErro] = useState<string | null>(null);
   const [mensagem, setMensagem] = useState<string | null>(null);
   const [editando, setEditando] = useState(false);
@@ -29,7 +36,14 @@ export default function DetalhePedido() {
 
     buscarPedido(pedidoId)
       .then((dados) => {
-        if (ativo) setPedido(dados);
+        if (!ativo) return;
+        setPedido(dados);
+
+        if (dados.status === "APROVADO" || dados.status === "CONTRATADO") {
+          buscarCredito(pedidoId)
+            .then((c) => { if (ativo) setCredito(c); })
+            .catch(() => {});
+        }
       })
       .catch(() => {
         if (ativo) setErro("Pedido não encontrado");
@@ -40,8 +54,8 @@ export default function DetalhePedido() {
     };
   }, [pedidoId]);
 
-  if (erro) return <p role="alert">{erro}</p>;
-  if (!pedido) return <p>Carregando...</p>;
+  if (erro) return <section className="card"><p className="error">{erro}</p></section>;
+  if (!pedido) return <section className="card"><p>Carregando...</p></section>;
 
   const indiceAtual = ETAPAS.indexOf(pedido.status);
   const encerrado = pedido.status === "REPROVADO" || pedido.status === "CANCELADO";
@@ -68,16 +82,22 @@ export default function DetalhePedido() {
   }
 
   return (
-    <main>
-      <Link to="/pedidos">← Voltar</Link>
+    <>
+      <section className="welcome">
+        <div>
+          <p className="eyebrow">PEDIDO #{pedido.id}</p>
+          <h1>{pedido.automovel.marca} {pedido.automovel.modelo}</h1>
+          <p>{formatarPeriodo(pedido.dataInicio, pedido.dataFim)}</p>
+        </div>
+        <StatusBadge status={pedido.status} />
+      </section>
 
-      <h1>Pedido #{pedido.id}</h1>
-      <StatusBadge status={pedido.status} />
+      <Link to="/pedidos" className="secondary-link">← Voltar</Link>
 
-      {mensagem && <p role="status">{mensagem}</p>}
+      {mensagem && <p className="success notice" role="status">{mensagem}</p>}
 
       {editando ? (
-        <>
+        <section className="card">
           <h2>Modificar pedido</h2>
           <PedidoForm
             inicial={{
@@ -89,79 +109,122 @@ export default function DetalhePedido() {
             onSubmit={handleModificar}
             onCancelar={() => setEditando(false)}
           />
-        </>
+        </section>
       ) : (
         <>
-          <h2>Automóvel</h2>
-          <p>Matrícula: {pedido.automovel.matricula}</p>
-          <p>Marca: {pedido.automovel.marca}</p>
-          <p>Modelo: {pedido.automovel.modelo}</p>
-          <p>Ano: {pedido.automovel.ano}</p>
-          <p>Placa: {pedido.automovel.placa}</p>
+          <section className="card">
+            <h2>Automóvel</h2>
+            <div className="details">
+              <div><span>Marca</span><strong>{pedido.automovel.marca}</strong></div>
+              <div><span>Modelo</span><strong>{pedido.automovel.modelo}</strong></div>
+              <div><span>Ano</span><strong>{pedido.automovel.ano}</strong></div>
+              <div><span>Placa</span><strong>{pedido.automovel.placa}</strong></div>
+              <div><span>Matrícula</span><strong>{pedido.automovel.matricula}</strong></div>
+            </div>
+          </section>
 
-          <h2>Período</h2>
-          <p>
-            {pedido.dataInicio} a {pedido.dataFim}
-          </p>
+          <section className="card">
+            <h2>Período</h2>
+            <div className="details">
+              <div><span>Início</span><strong>{formatarData(pedido.dataInicio)}</strong></div>
+              <div><span>Fim</span><strong>{formatarData(pedido.dataFim)}</strong></div>
+            </div>
+          </section>
 
-          <h2>Andamento</h2>
-          {encerrado ? (
-            <p>Este pedido foi {rotulosEtapa[pedido.status].toLowerCase()}.</p>
-          ) : (
-            <ol>
-              {ETAPAS.map((etapa, index) => {
-                const concluida = index < indiceAtual;
-                const atual = index === indiceAtual;
+          <section className="card">
+            <h2>Andamento</h2>
+            {encerrado ? (
+              <p>Este pedido foi {rotulosEtapa[pedido.status].toLowerCase()}.</p>
+            ) : (
+              <ol>
+                {ETAPAS.map((etapa, index) => {
+                  const concluida = index < indiceAtual;
+                  const atual = index === indiceAtual;
 
-                return (
-                  <li
-                    key={etapa}
-                    style={{
-                      fontWeight: atual ? 700 : 400,
-                      opacity: index > indiceAtual ? 0.5 : 1,
-                    }}
-                  >
-                    {concluida ? "✓ " : atual ? "● " : "○ "}
-                    {rotulosEtapa[etapa]}
-                  </li>
-                );
-              })}
-            </ol>
-          )}
+                  return (
+                    <li
+                      key={etapa}
+                      style={{
+                        fontWeight: atual ? 700 : 400,
+                        opacity: index > indiceAtual ? 0.5 : 1,
+                      }}
+                    >
+                      {concluida ? "✓ " : atual ? "● " : "○ "}
+                      {rotulosEtapa[etapa]}
+                    </li>
+                  );
+                })}
+              </ol>
+            )}
+          </section>
 
           {pedido.avaliacao && (
-            <>
+            <section className="card">
               <h2>Avaliação financeira</h2>
-              <p>
-                Parecer:{" "}
-                <strong>
-                  {pedido.avaliacao.parecerPositivo ? "Positivo" : "Negativo"}
-                </strong>
-              </p>
+              <div className="details">
+                <div>
+                  <span>Parecer</span>
+                  <strong>{pedido.avaliacao.parecerPositivo ? "Positivo" : "Negativo"}</strong>
+                </div>
+                <div>
+                  <span>Avaliado por</span>
+                  <strong>{pedido.avaliacao.agenteNome}</strong>
+                </div>
+                <div>
+                  <span>Data</span>
+                  <strong>{formatarData(pedido.avaliacao.data)}</strong>
+                </div>
+              </div>
               {pedido.avaliacao.observacao && (
-                <p>Observação: {pedido.avaliacao.observacao}</p>
+                <p className="subtext">Observação: {pedido.avaliacao.observacao}</p>
               )}
-              <p>
-                Avaliado por {pedido.avaliacao.agenteNome} em{" "}
-                {new Date(pedido.avaliacao.data + "T00:00:00").toLocaleDateString("pt-BR")}
-              </p>
-            </>
+            </section>
           )}
 
-          <div>
-            {podeModificar && (
-              <button type="button" onClick={() => setEditando(true)}>
-                Modificar
-              </button>
-            )}
-            {podeCancelar && (
-              <button type="button" onClick={handleCancelar}>
-                Cancelar pedido
-              </button>
-            )}
-          </div>
+          {credito && (
+            <section className="card">
+              <h2>Crédito concedido</h2>
+              <div className="details">
+                <div>
+                  <span>Banco</span>
+                  <strong>{credito.bancoNome}</strong>
+                </div>
+                <div>
+                  <span>Valor</span>
+                  <strong>
+                    {credito.valor.toLocaleString("pt-BR", { style: "currency", currency: "BRL" })}
+                  </strong>
+                </div>
+                <div>
+                  <span>Taxa de juros</span>
+                  <strong>{credito.taxaJuros}%</strong>
+                </div>
+                <div>
+                  <span>Data</span>
+                  <strong>{formatarData(credito.data)}</strong>
+                </div>
+              </div>
+            </section>
+          )}
+
+          {(podeModificar || podeCancelar) && (
+            <section className="card">
+              <div className="actions">
+                {podeModificar && (
+                  <button type="button" onClick={() => setEditando(true)}>
+                    Modificar
+                  </button>
+                )}
+                {podeCancelar && (
+                  <button type="button" className="danger" onClick={handleCancelar}>
+                    Cancelar pedido
+                  </button>
+                )}
+              </div>
+            </section>
+          )}
         </>
       )}
-    </main>
+    </>
   );
 }

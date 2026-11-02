@@ -6,9 +6,25 @@ import {
   executarContrato,
   type Parecer,
 } from "../services/agentePedidoService";
-import type { Pedido } from "../types/types";
-import StatusBadge from "../components/StatusBadge";
+import type { Pedido, StatusPedido } from "../types/types";
+import StatusBadge, { rotulosStatus } from "../components/StatusBadge";
+import BarraBusca from "../components/BarraBusca";
 import { useAuth } from "../context/AuthContext";
+import { filtrarPedidos } from "../utils/filtrarPedidos";
+import { formatarPeriodo } from "../utils/formatar";
+
+const STATUS_OPCOES = Object.keys(rotulosStatus) as StatusPedido[];
+
+// 11 dígitos sem pontuação viram 000.000.000-00; outros valores passam como estão
+function formatarCpf(cpf: string) {
+  const d = cpf.replace(/\D/g, "");
+  if (d.length !== 11) return cpf;
+  return d.replace(/(\d{3})(\d{3})(\d{3})(\d{2})/, "$1.$2.$3-$4");
+}
+
+function formatarMoeda(valor: number) {
+  return valor.toLocaleString("pt-BR", { style: "currency", currency: "BRL" });
+}
 
 export default function PedidosRecebidos() {
   const { usuario } = useAuth();
@@ -18,12 +34,17 @@ export default function PedidosRecebidos() {
   const [carregando, setCarregando] = useState(true);
   const [erro, setErro] = useState<string | null>(null);
 
+  const [filtroStatus, setFiltroStatus] = useState<StatusPedido | "">("");
+  const [busca, setBusca] = useState("");
+
   const [selecionado, setSelecionado] = useState<Pedido | null>(null);
   const [observacao, setObservacao] = useState("");
   const [valorCredito, setValorCredito] = useState("");
   const [taxaCredito, setTaxaCredito] = useState("");
   const [enviando, setEnviando] = useState(false);
   const [aviso, setAviso] = useState<{ texto: string; ok: boolean } | null>(null);
+
+  const visiveis = filtrarPedidos(pedidos, busca, filtroStatus);
 
   function carregar() {
     setCarregando(true);
@@ -54,11 +75,7 @@ export default function PedidosRecebidos() {
     return err.response?.data?.mensagem ?? padrao;
   }
 
-  async function executar(
-    acao: () => Promise<unknown>,
-    sucesso: string,
-    padrao: string
-  ) {
+  async function executar(acao: () => Promise<unknown>, sucesso: string, padrao: string) {
     setEnviando(true);
     setAviso(null);
 
@@ -139,6 +156,25 @@ export default function PedidosRecebidos() {
       )}
 
       <section className="card">
+        <div className="form-grid">
+          <label>
+            Filtrar por status
+            <select
+              value={filtroStatus}
+              onChange={(e) => setFiltroStatus(e.target.value as StatusPedido | "")}
+            >
+              <option value="">Todos</option>
+              {STATUS_OPCOES.map((s) => (
+                <option key={s} value={s}>{rotulosStatus[s]}</option>
+              ))}
+            </select>
+          </label>
+
+          <BarraBusca valor={busca} onChange={setBusca} />
+        </div>
+      </section>
+
+      <section className="card">
         <h2>Pedidos</h2>
 
         {erro ? (
@@ -147,6 +183,8 @@ export default function PedidosRecebidos() {
           <p>Carregando...</p>
         ) : pedidos.length === 0 ? (
           <p>Nenhum pedido recebido.</p>
+        ) : visiveis.length === 0 ? (
+          <p>Nenhum pedido encontrado com esses filtros.</p>
         ) : (
           <div className="table-wrap">
             <table>
@@ -154,24 +192,24 @@ export default function PedidosRecebidos() {
                 <tr>
                   <th>Cliente</th>
                   <th>Carro</th>
+                  <th>Placa</th>
+                  <th>Matrícula</th>
                   <th>Período</th>
                   <th>Status</th>
                   <th></th>
                 </tr>
               </thead>
               <tbody>
-                {pedidos.map((pedido) => (
+                {visiveis.map((pedido) => (
                   <tr
                     key={pedido.id}
                     className={selecionado?.id === pedido.id ? "row-selected" : undefined}
                   >
                     <td>{pedido.clienteNome}</td>
-                    <td>
-                      {pedido.automovel.marca} {pedido.automovel.modelo}
-                    </td>
-                    <td>
-                      {pedido.dataInicio} até {pedido.dataFim}
-                    </td>
+                    <td>{pedido.automovel.marca} {pedido.automovel.modelo}</td>
+                    <td>{pedido.automovel.placa}</td>
+                    <td>{pedido.automovel.matricula}</td>
+                    <td>{formatarPeriodo(pedido.dataInicio, pedido.dataFim)}</td>
                     <td>
                       <StatusBadge status={pedido.status} />
                     </td>
@@ -218,11 +256,49 @@ export default function PedidosRecebidos() {
             </div>
             <div>
               <span>Período</span>
-              <strong>
-                {selecionado.dataInicio} até {selecionado.dataFim}
-              </strong>
+              <strong>{formatarPeriodo(selecionado.dataInicio, selecionado.dataFim)}</strong>
             </div>
           </div>
+
+          {selecionado.cliente && (
+            <>
+              <h3>Dados do cliente</h3>
+              <div className="details">
+                <div>
+                  <span>CPF</span>
+                  <strong>{formatarCpf(selecionado.cliente.cpf)}</strong>
+                </div>
+                <div>
+                  <span>Profissão</span>
+                  <strong>{selecionado.cliente.profissao || "Não informada"}</strong>
+                </div>
+              </div>
+
+              <h3>Rendimentos</h3>
+              {selecionado.cliente.rendimentos.length === 0 ? (
+                <p className="subtext">Nenhum empregador informado.</p>
+              ) : (
+                <div className="table-wrap">
+                  <table>
+                    <thead>
+                      <tr>
+                        <th>Empregador</th>
+                        <th>Rendimento</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {selecionado.cliente.rendimentos.map((r, i) => (
+                        <tr key={r.id ?? i}>
+                          <td>{r.entidadeEmpregadora}</td>
+                          <td>{formatarMoeda(r.valor)}</td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              )}
+            </>
+          )}
 
           {selecionado.avaliacao && (
             <p className="subtext">

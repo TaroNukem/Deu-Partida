@@ -370,3 +370,20 @@ footer {
 .welcome.card-wide {
   margin: 0 auto 28px;
 }
+
+.brand-logo {
+  height: 40px;
+  width: auto;
+  display: block;
+}
+
+.topbar {
+  min-height: 80px;
+  padding: 8px 32px;
+}
+
+.brand-logo {
+  height: 100px;   /* ajuste entre 56px e 72px conforme gosto */
+  width: auto;    /* mantém a proporção original */
+  display: block;
+}

@@ -56,4 +56,28 @@ export interface Pedido {
   status: StatusPedido;
   clienteNome?: string;
   avaliacao?: Avaliacao | null;
+  cliente?: ClienteResumo | null;
+}
+
+export interface ContratoCredito {
+  id: number;
+  pedidoId: number;
+  bancoNome: string;
+  valor: number;
+  taxaJuros: number;
+  data: string;
+}
+
+export interface RendimentoResumo {
+  id?: number;
+  entidadeEmpregadora: string;
+  valor: number;
+}
+
+export interface ClienteResumo {
+  id: number;
+  nome: string;
+  cpf: string;
+  profissao: string;
+  rendimentos: RendimentoResumo[];
 }
