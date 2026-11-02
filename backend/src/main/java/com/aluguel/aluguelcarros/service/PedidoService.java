@@ -1,7 +1,7 @@
-
 package com.aluguel.aluguelcarros.service;
 
 import com.aluguel.aluguelcarros.dto.AutomovelDTO;
+import com.aluguel.aluguelcarros.dto.AvaliacaoResponse;
 import com.aluguel.aluguelcarros.dto.PedidoRequest;
 import com.aluguel.aluguelcarros.dto.PedidoResponse;
 import com.aluguel.aluguelcarros.exception.RegraNegocioException;
@@ -11,16 +11,15 @@ import com.aluguel.aluguelcarros.model.Cliente;
 import com.aluguel.aluguelcarros.model.PedidoAluguel;
 import com.aluguel.aluguelcarros.model.StatusPedido;
 import com.aluguel.aluguelcarros.model.TipoAgente;
-import com.aluguel.aluguelcarros.repository.AgenteRepository;
-import com.aluguel.aluguelcarros.repository.AutomovelRepository;
-import com.aluguel.aluguelcarros.repository.ClienteRepository;
-import com.aluguel.aluguelcarros.repository.PedidoAluguelRepository;
+import com.aluguel.aluguelcarros.repository.*;
 import com.aluguel.aluguelcarros.security.UsuarioLogado;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import com.aluguel.aluguelcarros.dto.ContratoCreditoResponse;
+import java.util.Optional;
 
 import java.time.LocalDate;
 import java.util.List;
@@ -34,6 +33,31 @@ public class PedidoService {
     private final ClienteRepository clienteRepository;
     private final AgenteRepository agenteRepository;
     private final UsuarioLogado usuarioLogado;
+    private final AvaliacaoFinanceiraRepository avaliacaoRepository;
+    private final ContratoCreditoRepository contratoCreditoRepository;
+
+    public Optional<ContratoCreditoResponse> buscarCreditoMeu(Long id) {
+        Cliente cliente = clienteLogado();
+
+        PedidoAluguel pedido = pedidoRepository.findById(id)
+                .orElseThrow(() ->
+                        new EntityNotFoundException("Pedido não encontrado"));
+
+        if (!pedido.getCliente().getId().equals(cliente.getId())) {
+            throw new AccessDeniedException(
+                    "Você não tem permissão para acessar este pedido");
+        }
+
+        return contratoCreditoRepository.findByPedidoId(id)
+                .map(c -> new ContratoCreditoResponse(
+                        c.getId(),
+                        pedido.getId(),
+                        c.getBanco().getNome(),
+                        c.getValor(),
+                        c.getTaxaJuros(),
+                        c.getData()
+                ));
+    }
 
     // 6.2 e 6.3 - criar pedido
     @Transactional
@@ -42,8 +66,7 @@ public class PedidoService {
 
         validarDatas(req.dataInicio(), req.dataFim());
 
-        Automovel automovel = obterOuCriarAutomovel(
-                req.automovel(), cliente);
+        Automovel automovel = obterOuCriarAutomovel(req.automovel(), cliente);
 
         PedidoAluguel pedido = new PedidoAluguel();
         pedido.setCliente(cliente);
@@ -116,16 +139,21 @@ public class PedidoService {
 
         validarDatas(req.dataInicio(), req.dataFim());
 
-        Automovel automovel = obterOuCriarAutomovel(
-                req.automovel(), cliente);
+        Automovel automovel = pedido.getAutomovel();
+        AutomovelDTO dto = req.automovel();
 
-        pedido.setAutomovel(automovel);
+        automovel.setMatricula(dto.matricula());
+        automovel.setAno(dto.ano());
+        automovel.setMarca(dto.marca());
+        automovel.setModelo(dto.modelo());
+        automovel.setPlaca(dto.placa());
+        automovelRepository.save(automovel);
+
         pedido.setDataInicio(req.dataInicio());
         pedido.setDataFim(req.dataFim());
 
         if (req.bancoId() != null) {
-            Agente banco = buscarBanco(req.bancoId());
-            pedido.setBancoCredito(banco);
+            pedido.setBancoCredito(buscarBanco(req.bancoId()));
         } else {
             pedido.setBancoCredito(null);
         }
@@ -147,7 +175,7 @@ public class PedidoService {
                     "Você não tem permissão para cancelar este pedido");
         }
 
-        if (pedido.getStatus() == StatusPedido.CONTRATATO
+        if (pedido.getStatus() == StatusPedido.CONTRATADO
                 || pedido.getStatus() == StatusPedido.CANCELADO) {
             throw new RegraNegocioException(
                     "Não é possível cancelar um pedido contratado ou já cancelado");
@@ -190,9 +218,7 @@ public class PedidoService {
     }
 
     // Busca um automóvel pela placa ou cria um novo
-    private Automovel obterOuCriarAutomovel(
-            AutomovelDTO dto, Cliente cliente) {
-
+    private Automovel obterOuCriarAutomovel(AutomovelDTO dto, Cliente cliente) {
         return automovelRepository.findByPlaca(dto.placa())
                 .orElseGet(() -> {
                     Automovel a = new Automovel();
@@ -207,7 +233,7 @@ public class PedidoService {
                 });
     }
 
-    // Converte a entidade para DTO de resposta
+    // Converte a entidade para DTO de resposta, incluindo a avaliação financeira
     private PedidoResponse paraResponse(PedidoAluguel p) {
         Automovel a = p.getAutomovel();
 
@@ -220,6 +246,16 @@ public class PedidoService {
                 a.getPlaca()
         );
 
+        AvaliacaoResponse avaliacao = avaliacaoRepository
+                .findByPedidoId(p.getId())
+                .map(av -> new AvaliacaoResponse(
+                        av.getObservacao(),
+                        av.isParecerPositivo(),
+                        av.getData(),
+                        av.getAgente().getNome()
+                ))
+                .orElse(null);
+
         return new PedidoResponse(
                 p.getId(),
                 autoDto,
@@ -227,7 +263,8 @@ public class PedidoService {
                 p.getDataFim(),
                 p.getDataPedido(),
                 p.getStatus(),
-                p.getCliente().getNome()
+                p.getCliente().getNome(),
+                avaliacao
         );
     }
 }

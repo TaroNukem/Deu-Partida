@@ -93,6 +93,7 @@ public class AgenteService {
     }
 
     // Converte a entidade para DTO de resposta
+    // Converte a entidade para DTO de resposta
     private PedidoResponse paraResponse(PedidoAluguel p) {
         Automovel a = p.getAutomovel();
 
@@ -105,6 +106,16 @@ public class AgenteService {
                 a.getPlaca()
         );
 
+        AvaliacaoResponse avaliacao = avaliacaoRepository
+                .findByPedidoId(p.getId())
+                .map(av -> new AvaliacaoResponse(
+                        av.getObservacao(),
+                        av.isParecerPositivo(),
+                        av.getData(),
+                        av.getAgente().getNome()
+                ))
+                .orElse(null);
+
         return new PedidoResponse(
                 p.getId(),
                 autoDto,
@@ -112,7 +123,8 @@ public class AgenteService {
                 p.getDataFim(),
                 p.getDataPedido(),
                 p.getStatus(),
-                p.getCliente().getNome()
+                p.getCliente().getNome(),
+                avaliacao
         );
     }
 
@@ -270,7 +282,7 @@ public class AgenteService {
         contrato.setContratoCredito(credito);
 
         // Atualiza o status do pedido.
-        pedido.setStatus(StatusPedido.CONTRATATO);
+        pedido.setStatus(StatusPedido.CONTRATADO);
 
         pedidoRepository.save(pedido);
 

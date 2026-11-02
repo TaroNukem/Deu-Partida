@@ -9,6 +9,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import com.aluguel.aluguelcarros.dto.ContratoCreditoResponse;
 
 import java.util.List;
 
@@ -56,5 +57,12 @@ public class PedidoController {
     @PatchMapping("/{id}/cancelar")
     public PedidoResponse cancelar(@PathVariable Long id) {
         return pedidoService.cancelar(id);
+    }
+
+    @GetMapping("/{id}/credito")
+    public ResponseEntity<ContratoCreditoResponse> credito(@PathVariable Long id) {
+        return pedidoService.buscarCreditoMeu(id)
+                .map(ResponseEntity::ok)
+                .orElseGet(() -> ResponseEntity.noContent().build());
     }
 }
