@@ -387,3 +387,14 @@ footer {
   width: auto;    /* mantém a proporção original */
   display: block;
 }
+
+.checkbox {
+  flex-direction: row;
+  align-items: center;
+  gap: 10px;
+  font-weight: 600;
+}
+.checkbox input {
+  width: auto;
+  margin: 0;
+}

@@ -81,3 +81,8 @@ export interface ClienteResumo {
   profissao: string;
   rendimentos: RendimentoResumo[];
 }
+
+export interface Banco {
+  id: number;
+  nome: string;
+}

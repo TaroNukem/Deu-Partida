@@ -11,6 +11,7 @@ import MeusPedidos from "./pages/MeusPedidos";
 import NovoPedido from "./pages/NovoPedido";
 import DetalhePedido from "./pages/DetalhePedido";
 import PedidosRecebidos from "./pages/PedidosRecebidos";
+import MeusAutomoveis from "./pages/MeusAutomoveis";
 
 export default function App() {
   return (
@@ -73,6 +74,14 @@ export default function App() {
               element={
                 <PrivateRoute perfil="AGENTE">
                   <PedidosRecebidos />
+                </PrivateRoute>
+              }
+            />
+            <Route
+              path="/agente/automoveis"
+              element={
+                <PrivateRoute perfil="AGENTE">
+                  <MeusAutomoveis />
                 </PrivateRoute>
               }
             />

@@ -1,6 +1,6 @@
 import { Link, NavLink, useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
-import foto from "../assets/Logo.png"
+import foto from "../assets/Logo.png";
 
 export default function Navbar() {
   const { usuario, logout } = useAuth();
@@ -40,7 +40,10 @@ export default function Navbar() {
             <NavLink to="/meu-cadastro">Meu cadastro</NavLink>
           </>
         ) : (
-          <NavLink to="/agente/pedidos">Pedidos recebidos</NavLink>
+          <>
+            <NavLink to="/agente/pedidos">Pedidos recebidos</NavLink>
+            <NavLink to="/agente/automoveis">Meus automóveis</NavLink>
+          </>
         )}
 
         <span className="user-chip">
