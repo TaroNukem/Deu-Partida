@@ -1,142 +1,179 @@
 # 🚗 Deu Partida
 
-> [!NOTE]
-> Sistema web para gestão de aluguéis de automóveis: o cliente cria, consulta, modifica e cancela pedidos pela Internet, e os agentes (empresas e bancos) avaliam financeiramente cada pedido e executam o contrato.
+> Sistema web para gerenciamento de aluguéis de automóveis, conectando clientes e agentes em um fluxo de solicitação, análise financeira e acompanhamento de pedidos.
 
-<table>
-  <tr>
-    <td width="600px">
-      <div align="justify">
-        O <b>Deu Partida</b> foi desenvolvido no <b>Laboratório 02</b> da disciplina de <b>Desenvolvimento e Integração de Aplicações Web (DIAW)</b>, do curso de Engenharia de Software da PUC Minas. O sistema centraliza o fluxo de aluguel de automóveis: cadastro e login obrigatórios, pedidos de aluguel com status acompanhável, análise financeira feita por agentes e contratos de crédito concedidos por bancos. O projeto segue a arquitetura <b>MVC</b> no back-end (<b>Spring Boot</b>), usa <b>React + Vite</b> no front-end e <b>Supabase (PostgreSQL)</b> como banco de dados, com a modelagem UML versionada junto ao código.
-      </div>
-    </td>
-    <td width="250px">
-      <div>
-        <img src="./frontend/src/assets/LogoReadme.png" alt="Logo do Deu Partida" width="250px"/>
-      </div>
-    </td>
-  </tr>
-</table>
+<div align="center">
+  <img src="./frontend/src/assets/LogoReadme.png" alt="Logo do Deu Partida" width="220" />
+</div>
 
----
+<div align="center">
 
-## 🚧 Status do Projeto
+![Status](https://img.shields.io/badge/status-em_desenvolvimento-yellow?style=for-the-badge)
+![Java](https://img.shields.io/badge/Java-25-007396?style=for-the-badge&logo=openjdk&logoColor=white)
+![Spring Boot](https://img.shields.io/badge/Spring_Boot-4.1.2-6DB33F?style=for-the-badge&logo=springboot&logoColor=white)
+![React](https://img.shields.io/badge/React-19-61DAFB?style=for-the-badge&logo=react&logoColor=black)
+![TypeScript](https://img.shields.io/badge/TypeScript-6-3178C6?style=for-the-badge&logo=typescript&logoColor=white)
+![Vite](https://img.shields.io/badge/Vite-8-646CFF?style=for-the-badge&logo=vite&logoColor=white)
+![PostgreSQL](https://img.shields.io/badge/PostgreSQL-Supabase-4169E1?style=for-the-badge&logo=postgresql&logoColor=white)
 
-![Status](https://img.shields.io/badge/Status-Em_desenvolvimento-yellow?style=for-the-badge) ![Java](https://img.shields.io/badge/Java-25-007ec6?style=for-the-badge&logo=openjdk&logoColor=white) ![Spring Boot](https://img.shields.io/badge/Spring_Boot-4.0.x-007ec6?style=for-the-badge&logo=springboot&logoColor=white) ![Maven](https://img.shields.io/badge/Maven-build-007ec6?style=for-the-badge&logo=apachemaven&logoColor=white) ![React](https://img.shields.io/badge/React-front--end-007ec6?style=for-the-badge&logo=react&logoColor=white) ![Vite](https://img.shields.io/badge/Vite-bundler-007ec6?style=for-the-badge&logo=vite&logoColor=white) ![Supabase](https://img.shields.io/badge/Supabase-PostgreSQL-007ec6?style=for-the-badge&logo=supabase&logoColor=white)
+</div>
 
 ---
 
 ## 📚 Índice
-- [Links Úteis](#-links-úteis)
+
 - [Sobre o Projeto](#-sobre-o-projeto)
-- [Funcionalidades Principais](#-funcionalidades-principais)
-- [Tecnologias Utilizadas](#-tecnologias-utilizadas)
-  - [Front-end](#-front-end)
-  - [Back-end](#-back-end)
-  - [Banco de Dados](#-banco-de-dados)
+- [Funcionalidades](#-funcionalidades)
+- [Tecnologias](#-tecnologias)
 - [Arquitetura](#-arquitetura)
-  - [Diagramas](#diagramas)
+- [Documentação e Modelagem](#-documentação-e-modelagem)
 - [Instalação e Execução](#-instalação-e-execução)
   - [Pré-requisitos](#pré-requisitos)
-  - [Variáveis de Ambiente](#-variáveis-de-ambiente)
-  - [Instalação de Dependências](#-instalação-de-dependências)
-  - [Banco de Dados (Supabase)](#-banco-de-dados-supabase)
-  - [Como Executar a Aplicação](#-como-executar-a-aplicação)
-- [Deploy](#-deploy)
-- [Estrutura de Pastas](#-estrutura-de-pastas)
-- [Demonstração](#-demonstração)
-- [Testes](#-testes)
-- [Documentações utilizadas](#-documentações-utilizadas)
+  - [Clonar o Repositório](#1-clonar-o-repositório)
+  - [Configurar o Banco de Dados](#2-configurar-o-banco-de-dados)
+  - [Configurar as Variáveis de Ambiente](#3-configurar-as-variáveis-de-ambiente)
+  - [Instalar as Dependências](#4-instalar-as-dependências)
+  - [Executar a Aplicação](#5-executar-a-aplicação)
+- [Estrutura do Projeto](#-estrutura-do-projeto)
+- [Comandos Úteis](#-comandos-úteis)
 - [Autor](#-autor)
-- [Contribuição](#-contribuição)
-- [Agradecimentos](#-agradecimentos)
-- [Licença](#-licença)
-
----
-
-## 🔗 Links Úteis
-* 🌐 **Demo Online:** [Acesse a Aplicação Web](<link-da-demo-web>)
-* 📖 **Documentação de modelagem:** [pasta `docs/`](./docs)
-  > 📚 Casos de uso, histórias do usuário, diagramas de classes e de pacotes.
-* 🎨 **Wireframe:** [Wireframe do Deu Partida](https://claude.ai/artifact/FEMYX3ad4GBNoscHfaLFeK)
 
 ---
 
 ## 📝 Sobre o Projeto
 
-Gerir aluguéis de automóveis envolve vários participantes: o cliente que contrata, a empresa ou o banco que avalia a capacidade financeira e, muitas vezes, um banco que concede o crédito. Sem um sistema centralizado, fica difícil acompanhar o andamento de cada pedido.
+O **Deu Partida** é uma aplicação web desenvolvida no Laboratório 02 da disciplina de **Desenvolvimento e Integração de Aplicações Web (DIAW)**, do curso de Engenharia de Software da PUC Minas.
 
-O Deu Partida resolve isso oferecendo um ponto único pela Internet:
+A aplicação organiza o processo de aluguel de automóveis em uma plataforma na qual clientes podem cadastrar seus dados, solicitar aluguéis e acompanhar o andamento dos pedidos. Agentes vinculados a empresas ou bancos podem consultar os pedidos recebidos e realizar a análise financeira.
 
-- O **cliente** mantém seus dados (identificação, profissão e até 3 rendimentos) e acompanha o status de cada pedido de aluguel.
-- O **agente** (empresa ou banco) analisa financeiramente os pedidos e, com parecer positivo, coloca o contrato para execução.
-- O **banco** pode conceder o contrato de crédito associado ao aluguel.
+O sistema também contempla o cadastro de automóveis, rendimentos dos clientes e a associação opcional de um banco a uma solicitação de aluguel.
 
-Os automóveis podem ser registrados como propriedade de clientes, empresas ou bancos, dependendo do tipo de contrato. O sistema só pode ser usado após cadastro prévio e login.
+## ✨ Funcionalidades
 
-O projeto nasceu como trabalho acadêmico (Laboratório 02 de DIAW, PUC Minas) e também serve como peça do portfólio profissional.
+### 👤 Clientes
 
----
+- Cadastro e autenticação de usuários.
+- Consulta e atualização dos próprios dados cadastrais.
+- Registro de profissão e rendimentos.
+- Criação de pedidos de aluguel.
+- Consulta dos próprios pedidos e seus respectivos status.
+- Consulta dos detalhes de um pedido.
+- Edição e cancelamento de pedidos conforme as regras de negócio.
 
-## ✨ Funcionalidades Principais
+### 🏢 Agentes
 
-- 🔐 **Autenticação:** cadastro e login com usuário e senha para clientes e agentes; acesso restrito a usuários cadastrados.
-- 👤 **CRUD de cliente:** identificação (RG, CPF, nome, endereço), profissão e até 3 rendimentos com entidade empregadora.
-- 📝 **Pedidos de aluguel:** o cliente cria, consulta, modifica e cancela pedidos e acompanha o status.
-- 🚘 **Automóveis:** registro de matrícula, ano, marca, modelo e placa, com proprietário cliente, empresa ou banco.
-- 🏦 **Contrato de crédito:** associação opcional a um banco agente.
-- ✅ **Avaliação financeira:** parecer positivo ou negativo do agente sobre cada pedido.
-- 📄 **Execução de contrato:** pedidos com parecer positivo viram contrato de aluguel.
+- Cadastro e autenticação de agentes.
+- Consulta dos pedidos recebidos.
+- Avaliação financeira de pedidos.
+- Consulta e gerenciamento dos automóveis vinculados ao agente.
 
----
+### 🚘 Pedidos e contratos
 
-## 🛠 Tecnologias Utilizadas
+- Associação de um automóvel a uma solicitação de aluguel.
+- Definição do período desejado para o aluguel.
+- Associação opcional de um banco para contratação de crédito.
+- Acompanhamento do status da solicitação.
+- Registro da avaliação financeira e dos contratos relacionados ao pedido.
 
-### 💻 Front-end
+## 🛠 Tecnologias
 
-| Ferramenta | Para que é usada |
+### Front-end
+
+| Tecnologia | Utilização |
 | :--- | :--- |
-| **React** | Biblioteca base da interface. |
-| **Vite** | Servidor de desenvolvimento e build de produção. |
-| **JavaScript** | Linguagem do front-end. |
-| **Node.js (LTS) + npm** | Ambiente de execução e gerenciador de pacotes. |
+| [React 19](https://react.dev/) | Construção da interface por componentes. |
+| [TypeScript](https://www.typescriptlang.org/) | Tipagem estática do código. |
+| [Vite 8](https://vite.dev/) | Ambiente de desenvolvimento e build. |
+| [React Router](https://reactrouter.com/) | Navegação e controle de rotas. |
+| [Axios](https://axios-http.com/) | Comunicação HTTP com a API. |
+| CSS | Estilização da aplicação. |
+| [ESLint](https://eslint.org/) | Análise estática e padronização do código. |
 
-### 🖥️ Back-end
+### Back-end
 
-| Ferramenta | Para que é usada |
+| Tecnologia | Utilização |
 | :--- | :--- |
-| **Java (JDK 25)** | Linguagem e runtime da API. |
-| **Spring Boot 4.0.x** | Framework principal, com arquitetura MVC. |
-| **Apache Maven** | Build e gerenciamento de dependências (wrapper `./mvnw`). |
+| [Java 25](https://www.oracle.com/java/) | Linguagem de programação. |
+| [Spring Boot 4.1.2](https://spring.io/projects/spring-boot) | Estrutura principal da aplicação e API REST. |
+| Spring Web MVC | Criação dos endpoints HTTP. |
+| Spring Data JPA | Persistência e consultas ao banco de dados. |
+| Spring Security | Autenticação e autorização. |
+| [JJWT](https://github.com/jwtk/jjwt) | Geração e validação de tokens JWT. |
+| Hibernate | Mapeamento objeto-relacional. |
+| [Maven](https://maven.apache.org/) | Gerenciamento de dependências e build. |
+| Lombok | Redução de código repetitivo nas classes Java. |
 
-### 🗄️ Banco de Dados
+### Banco de Dados
 
-* **Supabase** (PostgreSQL) hospedando o banco.
-* Conexão via **JDBC** utilizando o **Session Pooler**.
+- **[Supabase](https://supabase.com/):** serviço utilizado para hospedar o banco de dados.
+- **PostgreSQL:** sistema gerenciador de banco de dados relacional.
+- **JDBC:** conexão entre a aplicação Spring Boot e o PostgreSQL.
 
 ---
 
 ## 🏗 Arquitetura
 
-O sistema é dividido em dois subsistemas: gestão de pedidos e contratos, e construção dinâmica das páginas web. Segue o modelo cliente-servidor: o servidor central (Spring Boot) atende, pela Internet, o front-end do cliente e dos agentes (React + Vite) e persiste os dados no Supabase.
+O projeto utiliza uma arquitetura cliente-servidor. O front-end, desenvolvido com React, consome os endpoints REST disponibilizados pelo back-end Spring Boot. O back-end concentra as regras de negócio, a autenticação e o acesso aos dados persistidos no PostgreSQL.
+
+### Organização do back-end
+
+O back-end segue a organização em camadas, dentro do padrão MVC:
 
 | Camada | Responsabilidade |
 | :--- | :--- |
-| **Model** | Entidades do domínio (Cliente, Agente, Automóvel, Pedido de Aluguel, Contrato, Contrato de Crédito, Rendimento). |
-| **View** | Interface em React + Vite, que consome a API do back-end. |
-| **Controller** | Endpoints REST que recebem as requisições e delegam às regras de negócio. |
-| **Service / Repository** | Regras de negócio e acesso ao banco de dados. |
+| **Controller** | Recebe as requisições HTTP e disponibiliza os endpoints da API. |
+| **Service** | Implementa as regras de negócio e coordena as operações. |
+| **Repository** | Realiza o acesso e a persistência dos dados com Spring Data JPA. |
+| **Model** | Representa as entidades e os conceitos do domínio. |
+| **DTO** | Define os dados recebidos e enviados pela API. |
+| **Security** | Configura autenticação, autorização e validação dos tokens JWT. |
+| **Config** | Reúne configurações da aplicação, como CORS. |
 
-### Diagramas
+### Autenticação e autorização
 
-Os modelos UML ficam versionados na pasta [`/docs`](./docs).
+A autenticação utiliza **JWT**. Após o login, a API retorna um token que o front-end armazena e envia no cabeçalho `Authorization` das requisições protegidas.
 
-| Diagrama | Arquivo |
-| :---: | :---: |
-| **Casos de Uso** | [docs](./docs) |
-| **Histórias do Usuário** | [docs](./docs) |
-| **Classes** | [docs](./docs) |
-| **Pacotes (Visão Lógica)** | [docs](./docs) |
+O sistema diferencia os perfis `CLIENTE` e `AGENTE`, restringindo o acesso às funcionalidades de acordo com o perfil autenticado. No front-end, as rotas privadas também verificam a autenticação e o perfil do usuário.
+
+### Fluxo simplificado
+
+```mermaid
+flowchart TD
+    A[Usuário] --> B[Front-end React]
+    B -->|Requisições HTTP / JWT| C[API Spring Boot]
+    C --> D[Controllers]
+    D --> E[Services]
+    E --> F[Repositories / Spring Data JPA]
+    F --> G[(PostgreSQL - Supabase)]
+```
+
+---
+
+## 📐 Documentação e Modelagem
+
+Os documentos de análise e modelagem estão versionados no diretório [`docs/`](./docs).
+
+### Diagramas UML
+
+| Documento | Arquivo |
+| :--- | :--- |
+| Diagrama de casos de uso | [Visualizar diagrama](./docs/diagramas/casos-de-uso.png) |
+| Diagrama de classes | [Visualizar diagrama](./docs/diagramas/diagrama-classes.png) |
+| Diagrama de pacotes | [Visualizar diagrama](./docs/diagramas/diagrama-pacotes.png) |
+| Histórias de usuário | [Visualizar documento](./docs/historias-de-usuario.md) |
+
+### Wireframes
+
+Os wireframes das telas planejadas estão disponíveis em [`docs/wireframe/`](./docs/wireframe):
+
+- [Meu cadastro de cliente](./docs/wireframe/01_meu_cadastro_cliente.png)
+- [Criar conta de agente](./docs/wireframe/02_criar_conta_agente.png)
+- [Pedidos recebidos](./docs/wireframe/03_pedidos_recebidos.png)
+- [Meus automóveis](./docs/wireframe/04_meus_automoveis.png)
+- [Criar conta de cliente](./docs/wireframe/05_criar_conta_cliente.png)
+- [Solicitar aluguel](./docs/wireframe/06_solicitar_aluguel.png)
+- [Login](./docs/wireframe/07_login.png)
+- [Meus pedidos](./docs/wireframe/08_meus_pedidos.png)
 
 ---
 
@@ -144,263 +181,256 @@ Os modelos UML ficam versionados na pasta [`/docs`](./docs).
 
 ### Pré-requisitos
 
-* **Java JDK:** versão **25**
-* **Maven:** pelo wrapper `./mvnw` incluído no projeto
-* **Node.js:** versão LTS, com **npm**
-* **Conta no Supabase** com um projeto PostgreSQL criado
+Antes de executar o projeto, instale:
 
----
+- **Java JDK 25**
+- **Node.js** (versão compatível com o Vite utilizado no projeto) e npm
+- **Git**
+- Uma conta no **Supabase** com um projeto PostgreSQL criado
 
-### 🔑 Variáveis de Ambiente
-
-#### Back-end (Spring Boot)
-
-Na pasta `backend`, copie `.env.example` para `.env` e preencha com os dados do seu projeto Supabase.
-
-| Variável | Descrição | Exemplo |
-| :--- | :--- | :--- |
-| `SERVER_PORT` | Porta local do servidor Spring Boot. | `8080` |
-| `SPRING_DATASOURCE_URL` | URL JDBC do Session Pooler. | `jdbc:postgresql://<HOST_DO_SESSION_POOLER>:<PORTA>/postgres?sslmode=require` |
-| `SPRING_DATASOURCE_USERNAME` | Usuário de conexão fornecido pelo Supabase. | `<USUARIO_DO_SESSION_POOLER>` |
-| `SPRING_DATASOURCE_PASSWORD` | Senha definida para o banco de dados. | `sua-senha-aqui` |
-
-O `application.properties` deve ler essas variáveis:
-
-```properties
-server.port=${SERVER_PORT:8080}
-
-spring.datasource.url=${SPRING_DATASOURCE_URL}
-spring.datasource.username=${SPRING_DATASOURCE_USERNAME}
-spring.datasource.password=${SPRING_DATASOURCE_PASSWORD}
-```
-
-> [!IMPORTANT]
-> O Spring Boot não carrega arquivos `.env` automaticamente. Defina as variáveis no ambiente de execução (no IntelliJ IDEA, pelas configurações de execução do Spring Boot) ou configure o carregamento do arquivo.
-
-#### Front-end (React, Vite)
-
-Se necessário, crie `frontend/.env` usando o prefixo `VITE_`.
-
-| Variável | Descrição | Exemplo |
-| :--- | :--- | :--- |
-| `VITE_API_URL` | URL base da API. | `http://localhost:8080` |
-
-> [!WARNING]
-> Nunca versione arquivos `.env` nem publique a senha do banco. Apenas os arquivos `.env.example` vão para o repositório. Confira se o `.gitignore` contém:
->
-> ```gitignore
-> .env
-> .env.*
-> !.env.example
-> ```
-
----
-
-### 📦 Instalação de Dependências
+### 1. Clonar o Repositório
 
 ```bash
-git clone <URL_DO_REPOSITORIO>
-cd deu-partida
+git clone https://github.com/TaroNukem/Deu-Partida.git
+cd Deu-Partida
 ```
 
-#### Front-end (React)
+### 2. Configurar o Banco de Dados
+
+O projeto utiliza um banco PostgreSQL hospedado no Supabase.
+
+1. Acesse [supabase.com](https://supabase.com/) e crie um projeto.
+2. No painel do projeto, abra a opção **Connect**.
+3. Selecione o método de conexão **Session Pooler**.
+4. Copie os dados de conexão fornecidos pelo Supabase.
+5. Utilize esses dados para preencher as variáveis do back-end na próxima etapa.
+
+> O endereço JDBC deve seguir o formato `jdbc:postgresql://HOST:PORTA/postgres?sslmode=require`. Utilize o host, a porta e o usuário exibidos para o Session Pooler no painel do seu projeto.
+
+### 3. Configurar as Variáveis de Ambiente
+
+#### Back-end
+
+Na pasta `backend`, existe o arquivo [`env.example`](./backend/env.example) com o modelo das variáveis necessárias.
+
+Crie uma cópia com o nome `.env`:
+
+**Windows PowerShell**
+```powershell
+Copy-Item env.example .env
+```
+
+**Linux / macOS**
+```bash
+cp env.example .env
+```
+
+Preencha o arquivo `backend/.env` com os dados do seu projeto:
+
+| Variável | Descrição |
+| :--- | :--- |
+| `DB_URL` | URL JDBC de conexão com o PostgreSQL do Supabase. |
+| `DB_USER` | Usuário disponibilizado pelo Session Pooler. |
+| `DB_PASSWORD` | Senha do banco de dados definida no Supabase. |
+| `JWT_SECRET` | Segredo utilizado para assinar os tokens JWT. |
+| `FRONTEND_ORIGIN` | Origem permitida para comunicação com o front-end. |
+
+Exemplo de estrutura:
+
+```env
+DB_URL=jdbc:postgresql://HOST:PORTA/postgres?sslmode=require
+DB_USER=USUARIO_DO_SESSION_POOLER
+DB_PASSWORD=SUA_SENHA
+JWT_SECRET=uma-chave-secreta-com-pelo-menos-32-caracteres
+FRONTEND_ORIGIN=http://localhost:5173
+```
+
+O arquivo `application.properties` importa opcionalmente o `.env` localizado no diretório de execução do back-end. Por isso, execute os comandos do back-end a partir da pasta `backend`.
+
+#### Front-end
+
+Na pasta `frontend`, copie [`frontend/.env.example`](./frontend/.env.example) para `frontend/.env`:
+
+**Windows PowerShell**
+```powershell
+Copy-Item .env.example .env
+```
+
+**Linux / macOS**
+```bash
+cp .env.example .env
+```
+
+A variável disponível é:
+
+| Variável | Descrição | Valor local |
+| :--- | :--- | :--- |
+| `VITE_API_URL` | Endereço base da API do back-end. | `http://localhost:8080` |
+
+> [!WARNING]
+> Não compartilhe nem versione os arquivos `.env`. Eles contêm credenciais e informações privadas. Utilize os arquivos de exemplo para documentar as variáveis necessárias, nunca as senhas reais.
+
+### 4. Instalar as Dependências
+
+Abra um terminal na raiz do repositório.
+
+#### Front-end
 
 ```bash
 cd frontend
 npm install
-cd ..
 ```
 
-#### Back-end (Spring Boot)
+#### Back-end
 
-```bash
-cd backend
-./mvnw clean install
-cd ..
-```
+Em outro terminal:
 
-No Windows PowerShell, caso o wrapper não execute pelo terminal:
-
+**Windows PowerShell**
 ```powershell
+cd backend
 .\mvnw.cmd clean install
 ```
 
----
-
-### 💾 Banco de Dados (Supabase)
-
-1. Acesse o [Supabase](https://supabase.com/), entre na sua conta ou crie uma.
-2. Clique em **New Project**, informe o nome e defina a senha do banco. Guarde a senha em local seguro.
-3. Com o projeto criado, clique em **Connect** e selecione **Session Pooler**.
-4. Copie o host, a porta, o nome do banco e o usuário indicados e preencha as variáveis `SPRING_DATASOURCE_*` do `backend/.env`.
-
-> [!TIP]
-> Os valores entre `<` e `>` são marcadores ilustrativos e devem ser substituídos pelos dados do painel do Supabase.
-
----
-
-### ⚡ Como Executar a Aplicação
-
-Execute em **dois terminais separados**.
-
-#### Terminal 1: Back-end (Spring Boot)
-
+**Linux / macOS**
 ```bash
 cd backend
-./mvnw spring-boot:run
+./mvnw clean install
 ```
 
-No Windows PowerShell:
+### 5. Executar a Aplicação
 
+O front-end e o back-end devem ser iniciados separadamente.
+
+#### Terminal 1 — Back-end
+
+A partir da pasta `backend`:
+
+**Windows PowerShell**
 ```powershell
-cd backend
 .\mvnw.cmd spring-boot:run
 ```
 
-🚀 *O back-end estará disponível em **http://localhost:8080**.*
+**Linux / macOS**
+```bash
+./mvnw spring-boot:run
+```
 
-#### Terminal 2: Front-end (React, Vite)
+A API ficará disponível em:
+
+`http://localhost:8080`
+
+#### Terminal 2 — Front-end
+
+A partir da pasta `frontend`:
 
 ```bash
-cd frontend
 npm run dev
 ```
 
-🎨 *O front-end estará disponível em **http://localhost:5173**.*
+O Vite exibirá no terminal o endereço local da aplicação. Por padrão:
+
+`http://localhost:5173`
 
 ---
 
-## 🚀 Deploy
+## 📂 Estrutura do Projeto
 
-1. **Build do front-end** (gera a pasta `dist` com arquivos estáticos):
+Estrutura resumida dos diretórios e arquivos relevantes do repositório:
 
-```bash
-cd frontend
-npm run build
-```
-
-2. **Build do back-end** (gera o `.jar` executável em `target`):
-
-```bash
-cd backend
-./mvnw clean package
-```
-
-3. **Variáveis de produção:** configure no provedor as variáveis `SPRING_DATASOURCE_*` para o back-end e `VITE_API_URL` (URL pública da API) para o front-end.
-
-> [!WARNING]
-> Em produção, nunca use credenciais de teste nem exponha a senha do banco.
-
----
-
-## 📂 Estrutura de Pastas
-
-```
-.
-├── README.md                    # 📘 Documentação principal do projeto
-├── .gitignore                   # 🧹 Arquivos ignorados pelo Git
+```text
+Deu-Partida/
+├── README.md
+├── docs/
+│   ├── diagramas/
+│   │   ├── casos-de-uso.png
+│   │   ├── diagrama-classes.png
+│   │   └── diagrama-pacotes.png
+│   ├── wireframe/
+│   │   ├── 01_meu_cadastro_cliente.png
+│   │   ├── 02_criar_conta_agente.png
+│   │   ├── 03_pedidos_recebidos.png
+│   │   ├── 04_meus_automoveis.png
+│   │   ├── 05_criar_conta_cliente.png
+│   │   ├── 06_solicitar_aluguel.png
+│   │   ├── 07_login.png
+│   │   └── 08_meus_pedidos.png
+│   └── historias-de-usuario.md
 │
-├── /docs                        # 📚 Diagramas UML, documentação e wireframes
-│   └── /img                     # 🖼️ Imagens do projeto
+├── frontend/
+│   ├── .env.example
+│   ├── package.json
+│   └── src/
+│       ├── assets/
+│       ├── components/
+│       ├── context/
+│       ├── pages/
+│       ├── routes/
+│       ├── services/
+│       ├── types/
+│       └── utils/
 │
-├── /frontend                    # 📁 Aplicação React + Vite
-│   ├── .env.example             # 🧩 Exemplo de variáveis de ambiente
-│   ├── /public                  # 📂 Arquivos estáticos
-│   ├── /src
-│   │   ├── /assets              # 🖼️ Imagens e logo (LogoReadme.png)
-│   │   ├── /components          # 🧱 Componentes reutilizáveis
-│   │   ├── /pages               # 📄 Telas da aplicação
-│   │   ├── /services            # 🔌 Chamadas HTTP à API
-│   │   └── /utils               # 🛠️ Funções utilitárias
-│   └── package.json             # 📦 Dependências e scripts
-│
-└── /backend                     # 📁 Aplicação Spring Boot (MVC)
-    ├── .env.example             # 🧩 Modelo das variáveis de ambiente
-    ├── .env                     # 🔐 Credenciais locais (não versionar)
-    ├── /src
-    │   ├── /main
-    │   │   ├── /java            # ☕ Controllers, services, repositories e models
-    │   │   └── /resources       # ⚙️ application.properties e recursos
-    │   └── /test/java           # 🧪 Testes
-    └── pom.xml                  # 🛠️ Build e dependências Maven
+└── backend/
+    ├── env.example
+    ├── mvnw
+    ├── mvnw.cmd
+    ├── pom.xml
+    └── src/
+        ├── main/
+        │   ├── java/com/aluguel/aluguelcarros/
+        │   │   ├── config/
+        │   │   ├── controller/
+        │   │   ├── dto/
+        │   │   ├── exception/
+        │   │   ├── model/
+        │   │   ├── repository/
+        │   │   ├── security/
+        │   │   ├── service/
+        │   │   └── util/
+        │   └── resources/
+        │       └── application.properties
+        └── test/
+            └── java/com/aluguel/aluguelcarros/
 ```
 
-> [!NOTE]
-> A estrutura é uma referência: ajuste os diretórios para corresponder aos que realmente existem no repositório.
+## 🧪 Comandos Úteis
+
+### Front-end
+
+| Comando | Ação |
+| :--- | :--- |
+| `npm run dev` | Inicia o servidor de desenvolvimento. |
+| `npm run build` | Verifica os tipos TypeScript e gera o build de produção. |
+| `npm run lint` | Executa o ESLint. |
+| `npm run preview` | Executa uma prévia local do build. |
+
+### Back-end
+
+Execute os comandos dentro da pasta `backend`:
+
+| Comando | Ação |
+| :--- | :--- |
+| `./mvnw spring-boot:run` | Inicia a aplicação Spring Boot. |
+| `./mvnw clean install` | Limpa, compila e empacota o projeto. |
+| `./mvnw test` | Executa os testes automatizados. |
+| `./mvnw clean package` | Gera o pacote JAR de produção. |
+
+No Windows, substitua `./mvnw` por `.\mvnw.cmd`.
 
 ---
 
-## 🎥 Demonstração
+## 👨‍💻 Autor
 
-### 🌐 Aplicação Web
+<div align="center">
 
-| Tela | Captura de Tela |
-| :---: | :---: |
-| **Login e Cadastro** | _em breve_ |
-| **Meus Pedidos** | _em breve_ |
-| **Novo Pedido** | _em breve_ |
-| **Perfil do Cliente (CRUD)** | _em breve_ |
-| **Painel do Agente** | _em breve_ |
+**Daniel Gomes Rolando**
 
-> [!TIP]
-> Hospede as imagens na pasta `docs/img` do repositório para manter as capturas disponíveis no GitHub.
+[![GitHub](https://img.shields.io/badge/GitHub-TaroNukem-181717?style=for-the-badge&logo=github)](https://github.com/TaroNukem)
+[![LinkedIn](https://img.shields.io/badge/LinkedIn-Daniel_Rolando-0A66C2?style=for-the-badge&logo=linkedin)](https://www.linkedin.com/in/daniel-gomes-rolando)
+
+</div>
 
 ---
 
-## 🧪 Testes
-
-```bash
-cd backend
-./mvnw test
-```
-
-Para validar o front-end:
-
-```bash
-cd frontend
-npm run build
-```
-
----
-
-## 🔗 Documentações utilizadas
-
-* 📖 [React](https://react.dev/reference/react)
-* 📖 [Vite](https://vite.dev/guide/)
-* 📖 [Spring Boot](https://docs.spring.io/spring-boot/index.html)
-* 📖 [Supabase](https://supabase.com/docs)
-* 📖 [PostgreSQL](https://www.postgresql.org/docs/)
-* 📖 [Conventional Commits](https://www.conventionalcommits.org/en/v1.0.0/)
-
----
-
-## 👥 Autor
-
-| 👤 Nome | 🖼️ Foto | :octocat: GitHub | 💼 LinkedIn | 📤 Gmail |
-|---------|----------|-----------------|-------------|-----------|
-| Daniel Gomes Rolando | <div align="center"><img src="https://github.com/TaroNukem.png" width="70px" height="70px"></div> | <div align="center"><a href="https://github.com/TaroNukem"><img src="https://joaopauloaramuni.github.io/image/github6.png" width="50px" height="50px"></a></div> | <div align="center"><a href="https://www.linkedin.com/in/daniel-gomes-rolando"><img src="https://joaopauloaramuni.github.io/image/linkedin2.png" width="50px" height="50px"></a></div> | <div align="center"><a href="mailto:danielgomesrolando@gmail.com"><img src="https://joaopauloaramuni.github.io/image/gmail3.png" width="50px" height="50px"></a></div> |
-
----
-
-## 🤝 Contribuição
-
-1. Faça um `fork` do projeto.
-2. Crie uma branch para sua feature (`git checkout -b feature/minha-feature`).
-3. Faça commit das mudanças (`git commit -m 'feat: adiciona nova funcionalidade'`), seguindo o [Conventional Commits](https://www.conventionalcommits.org/en/v1.0.0/).
-4. Envie a branch (`git push origin feature/minha-feature`).
-5. Abra um **Pull Request**.
-
----
-
-## 🙏 Agradecimentos
-
-* [**Engenharia de Software PUC Minas**](https://www.instagram.com/engsoftwarepucminas/) - Pelo apoio institucional e estrutura acadêmica.
-* [**Prof. Dr. João Paulo Aramuni**](https://github.com/joaopauloaramuni) - Pelos ensinamentos na matéria de Desenvolvimento e Integração de Aplicações Web e pelo template de README.
-
----
-
-## 📄 Licença
-
-Este projeto é de uso acadêmico. Defina aqui a licença do repositório (por exemplo, [MIT](./LICENSE)), caso aplicável.
-
----
+<div align="center">
+  Desenvolvido como parte do Laboratório 02 de Desenvolvimento e Integração de Aplicações Web — PUC Minas.
+</div>
